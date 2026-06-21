@@ -2033,15 +2033,12 @@
     import { GLTFLoader }    from "three/addons/loaders/GLTFLoader.js";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-    // Mapping: welcher Hotspot-Key zeigt auf welche Node im GLB?
-    // (Walschaerts-/Heusinger-Modell von Sketchfab)
+    // Welcher Hotspot zeigt auf welche Node im GLB.
+    // Falls eine Node visuell an der falschen Stelle landet, setze stattdessen
+    // unten in HOTSPOT_REL_POS eine direkte Position relativ zur Modell-Größe.
     //
-    // Falls ein Marker an der falschen Stelle sitzt:
-    //   1) URL mit "?debug" aufrufen → zeigt alle Node-Namen als
-    //      gelbe Labels überm Modell; daraus den richtigen Namen ablesen
-    //   2) Hier in HOTSPOT_NODE_MAP den Namen ersetzen, oder
-    //   3) In HOTSPOT_OFFSET unten den Hotspot um [x, y, z] in
-    //      Modell-Einheiten verschieben (typisch 0.1 - 1.0 Einheiten)
+    // Debug: URL mit "?debug" aufrufen → alle benannten Nodes werden als
+    // gelbe Labels über dem Modell eingeblendet (Name daraus ablesbar).
     const HOTSPOT_NODE_MAP = {
       gegenkurbel: "Cube_2",             // Gegenkurbel-Arm auf Wheel.002 (das mittlere Treibrad)
       schwinge:    "Cube.003_25",        // Schwingenkörper (gekrümmtes Bauteil)
@@ -2050,8 +2047,18 @@
       schieber:    "Cube.002_37"         // Schieberkasten am Zylinder (ganz links)
     };
 
-    // Manuelle Mikro-Offsets (in lokalen Modell-Einheiten), falls
-    // die Bounding-Box-Mitte einer Node nicht exakt am Bauteil sitzt.
+    // Direkte Position relativ zur Modell-Bounding-Box. Überschreibt die Node-Position,
+    // wenn gesetzt. Faktor 0 = Modell-Zentrum, +0.5 = rechter/oberer/vorderer Rand,
+    // -0.5 = linker/unterer/hinterer Rand. Achsen: x=horizontal, y=vertikal, z=Tiefe.
+    const HOTSPOT_REL_POS = {
+      gegenkurbel: { x: +0.18, y: -0.10, z: +0.20 },   // rechts am Treibrad
+      schwinge:    null,                                 // Node OK aus Screenshot
+      voreilhebel: { x: -0.30, y: +0.00, z: +0.30 },   // links der Mitte, mittlere Höhe
+      kreuzkopf:   null,                                 // Node OK aus Screenshot
+      schieber:    null                                  // Node OK aus Screenshot
+    };
+
+    // Manuelle Mikro-Offsets (in Welt-Einheiten), zusätzlich zu Node- oder Rel-Pos.
     const HOTSPOT_OFFSET = {
       gegenkurbel: [0, 0, 0],
       schwinge:    [0, 0, 0],
@@ -2137,6 +2144,10 @@
 
           scene.add(model);
 
+          // WICHTIG: matrixWorld aller Children aktualisieren, sonst liefert
+          // Box3.setFromObject auf Sub-Nodes potenziell falsche Positionen.
+          model.updateMatrixWorld(true);
+
           // Kamera passend platzieren
           const maxDim = Math.max(size.x, size.y, size.z);
           const fitDist = (maxDim / (2 * Math.tan(Math.PI * camera.fov / 360))) * 1.55;
@@ -2148,27 +2159,39 @@
             target: controls.target.clone()
           };
 
-          // Welt-Positionen der zugeordneten Nodes finden
+          // Welt-Positionen der Hotspots bestimmen: erst HOTSPOT_REL_POS prüfen
+          // (= direkte Position relativ zur Modell-Größe), sonst Node-Lookup.
           for (const [hsKey, nodeName] of Object.entries(HOTSPOT_NODE_MAP)) {
-            let nodeObj = null;
-            model.traverse(o => {
-              if (!nodeObj && o.name === nodeName) nodeObj = o;
-            });
-            if (nodeObj && hotspotRefs[hsKey]) {
-              const nb = new THREE.Box3().setFromObject(nodeObj);
-              let wp;
-              if (!nb.isEmpty()) {
-                wp = nb.getCenter(new THREE.Vector3());
+            if (!hotspotRefs[hsKey]) continue;
+            let wp = null;
+
+            const rel = HOTSPOT_REL_POS[hsKey];
+            if (rel) {
+              wp = new THREE.Vector3(rel.x * size.x, rel.y * size.y, rel.z * size.z);
+              console.info(`[3D] hotspot "${hsKey}" → rel-pos x=${rel.x} y=${rel.y} z=${rel.z} → world (${wp.x.toFixed(2)}, ${wp.y.toFixed(2)}, ${wp.z.toFixed(2)})`);
+            } else if (nodeName) {
+              let nodeObj = null;
+              model.traverse(o => {
+                if (!nodeObj && o.name === nodeName) nodeObj = o;
+              });
+              if (nodeObj) {
+                const nb = new THREE.Box3().setFromObject(nodeObj);
+                if (!nb.isEmpty()) {
+                  wp = nb.getCenter(new THREE.Vector3());
+                } else {
+                  wp = new THREE.Vector3();
+                  nodeObj.getWorldPosition(wp);
+                }
+                console.info(`[3D] hotspot "${hsKey}" → node "${nodeName}" @ (${wp.x.toFixed(2)}, ${wp.y.toFixed(2)}, ${wp.z.toFixed(2)})`);
               } else {
-                wp = new THREE.Vector3();
-                nodeObj.getWorldPosition(wp);
+                console.warn(`[3D] Node nicht gefunden für "${hsKey}" → "${nodeName}"`);
               }
-              const o = HOTSPOT_OFFSET[hsKey] || [0,0,0];
+            }
+
+            if (wp) {
+              const o = HOTSPOT_OFFSET[hsKey] || [0, 0, 0];
               wp.add(new THREE.Vector3(o[0], o[1], o[2]));
               hotspotRefs[hsKey].worldPos = wp;
-              console.info(`[3D] hotspot "${hsKey}" → node "${nodeName}" @ (${wp.x.toFixed(2)}, ${wp.y.toFixed(2)}, ${wp.z.toFixed(2)})`);
-            } else {
-              console.warn(`[3D] Node nicht gefunden für "${hsKey}" → "${nodeName}"`);
             }
           }
 
