@@ -2035,19 +2035,12 @@
 
     // Mapping: welcher Hotspot-Key zeigt auf welche Node im GLB?
     // (Walschaerts-/Heusinger-Modell von Sketchfab)
-    //
-    // Falls ein Marker an der falschen Stelle sitzt:
-    //   1) URL mit "?debug" aufrufen → zeigt alle Node-Namen als
-    //      gelbe Labels überm Modell; daraus den richtigen Namen ablesen
-    //   2) Hier in HOTSPOT_NODE_MAP den Namen ersetzen, oder
-    //   3) In HOTSPOT_OFFSET unten den Hotspot um [x, y, z] in
-    //      Modell-Einheiten verschieben (typisch 0.1 - 1.0 Einheiten)
     const HOTSPOT_NODE_MAP = {
-      gegenkurbel: "Cube_2",             // Gegenkurbel-Arm auf Wheel.002 (das mittlere Treibrad)
-      schwinge:    "Cube.003_25",        // Schwingenkörper (gekrümmtes Bauteil)
-      voreilhebel: "Rod2_33",            // Combination-Lever-Gruppe (Voreilhebel + Lenkerstange)
-      kreuzkopf:   "Pistonrods_12",      // Kolbenstange/Kreuzkopf-Bereich
-      schieber:    "Cube.002_37"         // Schieberkasten am Zylinder (ganz links)
+      gegenkurbel: "Eccentric_Rod_24",   // Excenterstange (führt zur Gegenkurbel am Rad)
+      schwinge:    "Expansion_Link_26",  // Schwinge
+      voreilhebel: "Rod3_29",            // Combination Lever = Voreilhebel
+      kreuzkopf:   "Pistons_15",         // Kreuzkopf-/Kolbengruppe
+      schieber:    "Piston valves_35"    // Schieber (piston valve)
     };
 
     // Manuelle Mikro-Offsets (in lokalen Modell-Einheiten), falls
@@ -2059,11 +2052,6 @@
       kreuzkopf:   [0, 0, 0],
       schieber:    [0, 0, 0]
     };
-
-    // Debug-Modus: URL mit "?debug" zeigt alle benannten Modell-Nodes
-    // als gelbe Labels über dem 3D-Modell.
-    const DEBUG_MODE = new URLSearchParams(location.search).has("debug");
-    const debugLabels = []; // Array von { name, worldPos, dom }
 
     let scene, camera, renderer, controls;
     let modelRoot = null;
@@ -2170,29 +2158,6 @@
             } else {
               console.warn(`[3D] Node nicht gefunden für "${hsKey}" → "${nodeName}"`);
             }
-          }
-
-          // Debug-Modus: alle benannten Nodes labeln
-          if (DEBUG_MODE) {
-            const skipPrefixes = ["Object_", "GLTF_", "Sketchfab"];
-            const labelLayer = document.createElement("div");
-            labelLayer.id = "debug-labels";
-            labelLayer.style.cssText = "position:absolute;inset:0;pointer-events:none;z-index:6;";
-            container.appendChild(labelLayer);
-            model.traverse(o => {
-              if (!o.name) return;
-              if (skipPrefixes.some(p => o.name.startsWith(p))) return;
-              if (o.name === "root" || o.name === "Sketchfab_model") return;
-              const nb = new THREE.Box3().setFromObject(o);
-              if (nb.isEmpty()) return;
-              const wp = nb.getCenter(new THREE.Vector3());
-              const dom = document.createElement("div");
-              dom.textContent = o.name;
-              dom.style.cssText = "position:absolute;top:0;left:0;background:rgba(255,235,59,0.92);color:#1a1a1a;font:600 9px/1.2 monospace;padding:2px 5px;border-radius:3px;border:1px solid #a31a1b;white-space:nowrap;transform:translate3d(-9999px,-9999px,0) translate(-50%,-50%);will-change:transform;box-shadow:0 1px 2px rgba(0,0,0,0.25);";
-              labelLayer.appendChild(dom);
-              debugLabels.push({ name: o.name, worldPos: wp, dom });
-            });
-            console.info(`[3D] Debug-Modus aktiv: ${debugLabels.length} Node-Labels eingeblendet. URL ohne "?debug" aufrufen zum Ausschalten.`);
           }
 
           // Loader ausblenden
@@ -2315,20 +2280,6 @@
             hs.dom.classList.toggle("behind", isBehind);
           }
         }
-      }
-
-      // Debug-Labels mitprojizieren (falls Debug-Modus aktiv)
-      for (let i = 0; i < debugLabels.length; i++) {
-        const lbl = debugLabels[i];
-        _v.copy(lbl.worldPos);
-        _toPt.copy(_v).sub(camera.position);
-        const distFwd = _toPt.dot(_fwd);
-        _v.project(camera);
-        const x = ( _v.x + 1) * 0.5 * w;
-        const y = (-_v.y + 1) * 0.5 * h;
-        const offscreen = distFwd <= 0 || _v.x < -1 || _v.x > 1 || _v.y < -1 || _v.y > 1;
-        lbl.dom.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%)`;
-        lbl.dom.style.opacity = offscreen ? "0" : "1";
       }
     }
 
