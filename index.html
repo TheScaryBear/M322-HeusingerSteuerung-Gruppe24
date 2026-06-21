@@ -2060,7 +2060,7 @@
       schwinge:    null,
       voreilhebel: { x: -0.30, y: +0.00, z: +0.30 },   // links der Mitte, mittlere Höhe
       kreuzkopf:   null,
-      schieber:    null
+      schieber:    { x: -0.40, y: +0.20, z: +0.30 }    // links oben über Zylinder
     };
 
     // Manuelle Mikro-Offsets (in Welt-Einheiten), zusätzlich zur Position.
@@ -2170,9 +2170,12 @@
               wp = new THREE.Vector3(rel.x * size.x, rel.y * size.y, rel.z * size.z);
               console.info(`[3D] hotspot "${hsKey}" → rel-pos x=${rel.x} y=${rel.y} z=${rel.z} → world (${wp.x.toFixed(2)}, ${wp.y.toFixed(2)}, ${wp.z.toFixed(2)})`);
             } else if (nodeName) {
+              // Three.js sanitiert Node-Namen: Leerzeichen werden zu Underscores.
+              // Deshalb beide Varianten probieren.
+              const sanitized = nodeName.replace(/\s/g, "_");
               let nodeObj = null;
               model.traverse(o => {
-                if (!nodeObj && o.name === nodeName) nodeObj = o;
+                if (!nodeObj && (o.name === nodeName || o.name === sanitized)) nodeObj = o;
               });
               if (nodeObj) {
                 const nb = new THREE.Box3().setFromObject(nodeObj);
