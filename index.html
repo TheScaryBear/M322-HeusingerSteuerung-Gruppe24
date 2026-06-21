@@ -1,0 +1,2293 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#A31A1B" />
+  <title>Heusinger-Steuerung · Furka-Dampfbahn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three":          "https://unpkg.com/three@0.160.1/build/three.module.js",
+      "three/addons/":  "https://unpkg.com/three@0.160.1/examples/jsm/"
+    }
+  }
+  </script>
+  <style>
+    /* ===========================================================
+       Furka-Dampfbahn — CD Manual V1.6 Tokens
+       =========================================================== */
+    :root {
+      /* Primärfarben */
+      --furka-rot:     #A31A1B;
+      --furka-blau:    #143A84;
+      --furka-gruen:   #124E33;
+      --furka-gold:    #FEC905;
+
+      /* Sekundärfarben */
+      --gletscher:     #C2C9D4;
+      --geroell:       #D9D5B8;
+      --granit:        #BC9D97;
+      --salbei:        #D3DAA9;
+
+      /* Neutrals */
+      --schwarz:       #1a1a1a;
+      --weiss:         #ffffff;
+      --paper:         #fbfaf6;
+      --grau-50:       #f5f3ee;
+      --grau-100:      #ece9e1;
+      --grau-200:      #d8d4c8;
+      --grau-300:      #b8b3a4;
+      --grau-500:      #6f6a5d;
+      --grau-700:      #3a382f;
+
+      /* Schrift */
+      --font-display:  'Oswald', 'DIN Condensed', 'Arial Narrow', sans-serif;
+      --font-body:     'Lora', 'Kepler Std', Georgia, 'Times New Roman', serif;
+
+      /* Spacing */
+      --s-1: 4px;
+      --s-2: 8px;
+      --s-3: 12px;
+      --s-4: 16px;
+      --s-5: 20px;
+      --s-6: 24px;
+      --s-7: 32px;
+      --s-8: 48px;
+
+      /* Radii (klein, gemäss CD V1.6) */
+      --r-sm: 4px;
+      --r-md: 6px;
+      --r-lg: 8px;
+      --r-pill: 999px;
+
+      /* Layout */
+      --frame-radius: 36px;
+      --nav-height: 56px;
+      --tabbar-height: 60px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background:
+        radial-gradient(ellipse at top, #ece6d8 0%, #d9d2c0 100%);
+      color: var(--schwarz);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ===========================================================
+       Phone-Frame (nur Desktop)
+       =========================================================== */
+    .phone-frame {
+      width: 100%;
+      max-width: 414px;
+      height: min(896px, calc(100vh - 48px));
+      background: var(--paper);
+      border-radius: var(--frame-radius);
+      box-shadow:
+        0 32px 64px -16px rgba(20, 18, 12, 0.28),
+        0 4px 12px -2px rgba(20, 18, 12, 0.12),
+        0 0 0 1px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      min-height: 0;
+    }
+
+    /* Mobile: kein Rahmen, voll Bildschirm */
+    @media (max-width: 480px) {
+      body { padding: 0; background: var(--paper); }
+      .phone-frame {
+        border-radius: 0;
+        box-shadow: none;
+        max-width: none;
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+      }
+    }
+
+    /* ===========================================================
+       Screens
+       =========================================================== */
+    .screen {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+    }
+    .screen[hidden] { display: none; }
+
+    /* ===========================================================
+       Top-Nav (Modell/Info/Detail)
+       =========================================================== */
+    .topnav {
+      flex: none;
+      height: var(--nav-height);
+      padding: 0 var(--s-4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--paper);
+      border-bottom: 1px solid var(--grau-200);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .topnav__title {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 18px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--schwarz);
+      flex: 1;
+      text-align: center;
+      padding: 0 var(--s-4);
+    }
+    .topnav__left, .topnav__right {
+      display: flex;
+      align-items: center;
+      gap: var(--s-2);
+      min-width: 64px;
+    }
+    .topnav__right { justify-content: flex-end; }
+
+    .icon-btn {
+      background: transparent;
+      border: 0;
+      padding: 8px;
+      cursor: pointer;
+      border-radius: var(--r-md);
+      color: var(--schwarz);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 120ms ease;
+      font-family: var(--font-display);
+    }
+    .icon-btn:hover, .icon-btn:focus-visible { background: var(--grau-100); }
+    .icon-btn:focus-visible { outline: 2px solid var(--furka-blau); outline-offset: 1px; }
+    .icon-btn svg { display: block; }
+
+    .back-btn {
+      gap: 6px;
+      padding: 6px 10px 6px 6px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* ===========================================================
+       Sprachumschalter
+       =========================================================== */
+    .lang-toggle {
+      display: inline-flex;
+      background: var(--grau-100);
+      border-radius: var(--r-pill);
+      padding: 2px;
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+    }
+    .lang-toggle button {
+      background: transparent;
+      border: 0;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: var(--r-pill);
+      color: var(--grau-500);
+      text-transform: uppercase;
+      font-family: inherit;
+      font-weight: inherit;
+      font-size: inherit;
+      letter-spacing: inherit;
+      transition: all 150ms ease;
+    }
+    .lang-toggle button[aria-pressed="true"] {
+      background: var(--schwarz);
+      color: var(--weiss);
+    }
+
+    /* ===========================================================
+       Start-Screen
+       =========================================================== */
+    .screen-start {
+      padding: 0;
+      background:
+        linear-gradient(180deg, var(--paper) 0%, var(--paper) 55%, var(--geroell) 100%);
+    }
+    .start__header {
+      padding: var(--s-5) var(--s-5) 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .start__wordmark {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--furka-rot);
+      line-height: 1.1;
+    }
+    .start__wordmark small {
+      display: block;
+      font-weight: 500;
+      font-size: 10px;
+      color: var(--grau-500);
+      letter-spacing: 0.1em;
+      margin-top: 2px;
+    }
+
+    .start__hero {
+      flex: 1;
+      padding: var(--s-6) var(--s-5) var(--s-5);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .start__eyebrow {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--furka-blau);
+      margin-bottom: var(--s-3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .start__eyebrow::before {
+      content: "";
+      width: 24px;
+      height: 1px;
+      background: var(--furka-blau);
+    }
+    .start__title {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 42px;
+      line-height: 0.95;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--schwarz);
+      margin: 0 0 var(--s-4);
+    }
+    .start__title em {
+      font-style: normal;
+      color: var(--furka-rot);
+      display: block;
+    }
+    .start__subtitle {
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.4;
+      color: var(--grau-700);
+      margin: 0 0 var(--s-7);
+      max-width: 28ch;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 22px;
+      border: 0;
+      border-radius: var(--r-md);
+      cursor: pointer;
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: transform 100ms ease, background 150ms ease, color 150ms ease;
+      text-decoration: none;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn:focus-visible { outline: 2px solid var(--furka-blau); outline-offset: 2px; }
+
+    .btn--primary {
+      background: var(--furka-rot);
+      color: var(--weiss);
+    }
+    .btn--primary:hover { background: #8b1617; }
+
+    .btn--secondary {
+      background: transparent;
+      color: var(--schwarz);
+      border: 1.5px solid var(--schwarz);
+    }
+    .btn--secondary:hover { background: var(--schwarz); color: var(--weiss); }
+
+    .start__cta-row {
+      display: flex;
+      flex-direction: column;
+      gap: var(--s-3);
+      align-items: flex-start;
+    }
+
+    .start__footer {
+      padding: var(--s-5);
+      border-top: 1px solid rgba(20, 18, 12, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .start__event {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--schwarz);
+    }
+    .start__event-meta {
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--grau-500);
+      font-style: italic;
+    }
+
+    /* ===========================================================
+       Modell-Screen — Schematische Darstellung
+       =========================================================== */
+    .screen-model {
+      background: var(--paper);
+    }
+    .model__intro {
+      padding: var(--s-5) var(--s-5) 0;
+    }
+    .model__progress {
+      display: flex;
+      align-items: center;
+      gap: var(--s-3);
+      margin-bottom: var(--s-4);
+    }
+    .progress-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: var(--grau-100);
+      border-radius: var(--r-pill);
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--schwarz);
+    }
+    .progress-pill__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--furka-rot);
+    }
+    .progress-pill.complete .progress-pill__dot {
+      background: var(--furka-gruen);
+    }
+
+    .model__hint {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--grau-500);
+      margin: 0 0 var(--s-4);
+      line-height: 1.4;
+    }
+
+    .schematic-wrap {
+      padding: 0 var(--s-4) var(--s-4);
+    }
+
+    /* ===========================================================
+       3D-Modell Viewer
+       =========================================================== */
+    .model3d {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background:
+        radial-gradient(ellipse at center, #e6dfcb 0%, #cfc7ad 100%);
+      border-radius: var(--r-lg);
+      border: 1px solid rgba(20, 18, 12, 0.1);
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .model3d__canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+    .model3d__canvas:active { cursor: grabbing; }
+
+    .model3d__hotspots {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .model3d__controls {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      display: flex;
+      gap: 6px;
+      pointer-events: auto;
+    }
+    .model3d__btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(20, 18, 12, 0.15);
+      color: var(--schwarz);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+      transition: background 120ms ease, transform 100ms ease;
+    }
+    .model3d__btn:hover { background: #fff; }
+    .model3d__btn:active { transform: scale(0.94); }
+    .model3d__btn:focus-visible { outline: 2px solid var(--furka-blau); outline-offset: 2px; }
+
+    .model3d__loader {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--grau-500);
+      font-family: var(--font-display);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      pointer-events: none;
+      transition: opacity 300ms ease;
+    }
+    .model3d__loader[hidden] { display: none; }
+    .model3d__loader.is-fading { opacity: 0; }
+    .model3d__spinner {
+      width: 28px;
+      height: 28px;
+      border: 2.5px solid rgba(20, 18, 12, 0.15);
+      border-top-color: var(--furka-rot);
+      border-radius: 50%;
+      animation: spin3d 0.9s linear infinite;
+    }
+    @keyframes spin3d { to { transform: rotate(360deg); } }
+
+    .model3d__error {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px;
+      text-align: center;
+      color: var(--furka-rot);
+      font-family: var(--font-body);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .model3d__error small {
+      color: var(--grau-500);
+      font-size: 11px;
+    }
+
+    /* HTML-Hotspots, projiziert über das 3D-Modell */
+    .model3d__canvas { position: relative; z-index: 0; }
+    .model3d__hotspots { z-index: 2; }
+    .model3d__controls { z-index: 4; }
+    .model3d__loader { z-index: 5; }
+
+    .hotspot-3d {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: translate3d(-9999px, -9999px, 0) translate(-50%, -50%);
+      transition: opacity 180ms ease;
+      pointer-events: auto;
+      will-change: transform;
+      z-index: 3;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .hotspot-3d:focus { outline: none; }
+    .hotspot-3d__marker {
+      position: relative;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--furka-rot);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 14px;
+      border: 2px solid #fff;
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.18),
+        0 2px 6px rgba(0, 0, 0, 0.25);
+      transition: transform 100ms ease, background 150ms ease;
+    }
+    .hotspot-3d::before {
+      content: '';
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--furka-rot);
+      opacity: 0.6;
+      pointer-events: none;
+      animation: pulse-3d 1.8s ease-out infinite;
+    }
+    .hotspot-3d:nth-child(2)::before { animation-delay: 0.36s; }
+    .hotspot-3d:nth-child(3)::before { animation-delay: 0.72s; }
+    .hotspot-3d:nth-child(4)::before { animation-delay: 1.08s; }
+    .hotspot-3d:nth-child(5)::before { animation-delay: 1.44s; }
+    @keyframes pulse-3d {
+      0%   { transform: scale(1);   opacity: 0.6; }
+      100% { transform: scale(1.9); opacity: 0;   }
+    }
+    .hotspot-3d:hover .hotspot-3d__marker { transform: scale(1.06); }
+    .hotspot-3d:active .hotspot-3d__marker { transform: scale(0.92); }
+    .hotspot-3d:focus-visible .hotspot-3d__marker {
+      box-shadow:
+        0 0 0 3px var(--furka-blau),
+        0 2px 6px rgba(0, 0, 0, 0.25);
+    }
+    .hotspot-3d__check {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--furka-gruen);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid #fff;
+      line-height: 1;
+    }
+    .hotspot-3d.discovered .hotspot-3d__check { display: flex; }
+    .hotspot-3d.discovered::before { display: none; }
+
+    /* Hinter dem Modell: ausgegraut, aber weiterhin antippbar */
+    .hotspot-3d.behind {
+      opacity: 0.42;
+    }
+    .hotspot-3d.behind .hotspot-3d__marker {
+      background: var(--grau-500);
+    }
+    .hotspot-3d.behind::before { display: none; }
+
+    .schematic-legend {
+      padding: var(--s-3) var(--s-5) var(--s-6);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--s-2) var(--s-4);
+      font-family: var(--font-display);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--grau-500);
+    }
+    .schematic-legend__item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .schematic-legend__dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--furka-rot);
+      color: var(--weiss);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 600;
+      border: 1.5px solid var(--weiss);
+      box-shadow: 0 0 0 1px var(--furka-rot);
+    }
+
+    /* ===========================================================
+       Detail-Screen
+       =========================================================== */
+    .screen-detail {
+      background: var(--paper);
+    }
+    .detail__hero {
+      padding: var(--s-5);
+      background: linear-gradient(180deg, var(--paper) 0%, var(--grau-50) 100%);
+      border-bottom: 1px solid var(--grau-200);
+    }
+    .detail__number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--furka-rot);
+      color: var(--weiss);
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: var(--s-3);
+    }
+    .detail__name {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 32px;
+      line-height: 1.05;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin: 0 0 var(--s-3);
+      color: var(--schwarz);
+    }
+    .detail__lead {
+      font-family: var(--font-body);
+      font-style: italic;
+      font-size: 17px;
+      line-height: 1.4;
+      color: var(--grau-700);
+      margin: 0;
+      max-width: 38ch;
+    }
+
+    .detail__body {
+      padding: var(--s-6) var(--s-5);
+    }
+    .detail__section + .detail__section { margin-top: var(--s-6); }
+    .detail__section-heading {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--furka-blau);
+      margin: 0 0 var(--s-3);
+      display: flex;
+      align-items: center;
+      gap: var(--s-2);
+    }
+    .detail__section-heading::before {
+      content: "";
+      width: 18px;
+      height: 1.5px;
+      background: var(--furka-blau);
+      display: inline-block;
+    }
+    .detail__section p {
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--schwarz);
+      margin: 0 0 var(--s-3);
+    }
+    .detail__section p:last-child { margin-bottom: 0; }
+
+    .detail__facts {
+      margin-top: var(--s-6);
+      border-top: 1px solid var(--grau-200);
+      padding-top: var(--s-5);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--s-3);
+    }
+    .fact {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--s-3);
+      padding-bottom: var(--s-2);
+      border-bottom: 1px dotted var(--grau-200);
+    }
+    .fact:last-child { border-bottom: 0; }
+    .fact__label {
+      font-family: var(--font-display);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--grau-500);
+      flex: none;
+    }
+    .fact__value {
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--schwarz);
+      text-align: right;
+      font-weight: 500;
+    }
+
+    .detail__illustration {
+      margin: var(--s-6) calc(-1 * var(--s-5)) 0;
+      padding: var(--s-5);
+      background: var(--geroell);
+      border-top: 1px solid var(--grau-200);
+      border-bottom: 1px solid var(--grau-200);
+    }
+    .detail__illustration svg {
+      width: 100%;
+      max-width: 240px;
+      display: block;
+      margin: 0 auto;
+    }
+    .detail__illustration-caption {
+      font-family: var(--font-display);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--grau-500);
+      text-align: center;
+      margin-top: var(--s-2);
+    }
+
+    .detail__action {
+      padding: var(--s-5);
+      border-top: 1px solid var(--grau-200);
+      background: var(--paper);
+      position: sticky;
+      bottom: 0;
+    }
+    .btn-mark {
+      width: 100%;
+      padding: 14px;
+      background: var(--furka-gruen);
+      color: var(--weiss);
+      border: 0;
+      border-radius: var(--r-md);
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 150ms ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-mark:hover { background: #0d3e28; }
+    .btn-mark:focus-visible { outline: 2px solid var(--furka-blau); outline-offset: 2px; }
+    .btn-mark[aria-pressed="true"] {
+      background: var(--grau-100);
+      color: var(--furka-gruen);
+      cursor: default;
+    }
+    .btn-mark[aria-pressed="true"]:hover { background: var(--grau-100); }
+
+    /* ===========================================================
+       Info-Screen
+       =========================================================== */
+    .screen-info {
+      background: var(--paper);
+    }
+    .info__body {
+      padding: var(--s-5);
+    }
+    .info__notice {
+      background: var(--gletscher);
+      color: var(--furka-blau);
+      padding: var(--s-3) var(--s-4);
+      border-radius: var(--r-md);
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-style: italic;
+      line-height: 1.4;
+      margin-bottom: var(--s-5);
+      display: none;
+    }
+    .info__notice.visible { display: block; }
+
+    .info__section + .info__section { margin-top: var(--s-7); }
+    .info__heading {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 22px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--schwarz);
+      margin: 0 0 var(--s-4);
+      line-height: 1.1;
+    }
+    .info__section p {
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--schwarz);
+      margin: 0 0 var(--s-3);
+    }
+
+    .timeline {
+      list-style: none;
+      padding: 0;
+      margin: var(--s-3) 0 0;
+      border-left: 1.5px solid var(--furka-rot);
+    }
+    .timeline li {
+      padding: 0 0 var(--s-5) var(--s-5);
+      position: relative;
+    }
+    .timeline li::before {
+      content: "";
+      position: absolute;
+      left: -6px;
+      top: 5px;
+      width: 10px;
+      height: 10px;
+      background: var(--furka-rot);
+      border-radius: 50%;
+      border: 2px solid var(--paper);
+    }
+    .timeline li:last-child { padding-bottom: 0; }
+    .timeline__year {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: 0.06em;
+      color: var(--furka-rot);
+      display: block;
+      margin-bottom: 2px;
+    }
+    .timeline__text {
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--schwarz);
+    }
+
+    .credits {
+      margin-top: var(--s-4);
+      padding: var(--s-4);
+      background: var(--grau-50);
+      border-radius: var(--r-md);
+      font-family: var(--font-body);
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--grau-700);
+    }
+    .credits strong {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--schwarz);
+      display: block;
+      margin-bottom: var(--s-2);
+    }
+
+    /* ===========================================================
+       Tab-Bar
+       =========================================================== */
+    .tabbar {
+      flex: none;
+      height: var(--tabbar-height);
+      display: flex;
+      background: var(--paper);
+      border-top: 1px solid var(--grau-200);
+    }
+    .tabbar[hidden] { display: none; }
+    .tab {
+      flex: 1;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      color: var(--grau-500);
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 150ms ease;
+      padding: 0;
+    }
+    .tab svg { display: block; }
+    .tab[aria-selected="true"] {
+      color: var(--furka-rot);
+    }
+    .tab:focus-visible { outline: 2px solid var(--furka-blau); outline-offset: -4px; }
+
+    /* ===========================================================
+       Hilfe-Overlay
+       =========================================================== */
+    .help-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(20, 18, 12, 0.65);
+      backdrop-filter: blur(2px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--s-5);
+      animation: fadeIn 180ms ease;
+    }
+    .help-overlay[hidden] { display: none; }
+    .help-card {
+      background: var(--paper);
+      border-radius: var(--r-lg);
+      padding: var(--s-6) var(--s-5);
+      max-width: 340px;
+      width: 100%;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+      animation: cardIn 220ms ease;
+    }
+    .help-card__icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--furka-rot);
+      color: var(--weiss);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--s-4);
+    }
+    .help-card__title {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 20px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin: 0 0 var(--s-3);
+    }
+    .help-card__body {
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--grau-700);
+      margin: 0 0 var(--s-5);
+    }
+    .help-card__cta {
+      width: 100%;
+      padding: 12px;
+      background: var(--schwarz);
+      color: var(--weiss);
+      border: 0;
+      border-radius: var(--r-md);
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    .help-card__cta:hover { background: var(--grau-700); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.96); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ===========================================================
+       Toast
+       =========================================================== */
+    .toast-container {
+      position: absolute;
+      bottom: calc(var(--tabbar-height) + var(--s-4));
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--s-2);
+      pointer-events: none;
+      z-index: 50;
+      padding: 0 var(--s-4);
+    }
+    .toast {
+      background: var(--schwarz);
+      color: var(--weiss);
+      padding: 10px 16px;
+      border-radius: var(--r-pill);
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      max-width: 90%;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+      animation: toastIn 180ms ease, toastOut 240ms ease 2.4s forwards;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast--success { background: var(--furka-gruen); }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes toastOut {
+      to { opacity: 0; transform: translateY(-4px); }
+    }
+
+    /* ===========================================================
+       Reduced motion
+       =========================================================== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .hotspot .pulse { display: none; }
+    }
+
+    /* Utility */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-frame" role="application" aria-label="Heusinger-Steuerung interaktiv">
+    <div class="app">
+
+      <!-- =======================================================
+           Start-Screen
+           ======================================================= -->
+      <section class="screen screen-start" data-screen="start" aria-labelledby="start-title">
+        <header class="start__header">
+          <div class="start__wordmark" aria-label="Furka-Dampfbahn Bergstrecke">
+            FURKA-DAMPFBAHN
+            <small data-i18n="start.wordmarkSub">Bergstrecke</small>
+          </div>
+          <div class="lang-toggle" role="group" aria-label="Sprache wählen">
+            <button type="button" data-lang="de" aria-pressed="true">DE</button>
+            <button type="button" data-lang="fr" aria-pressed="false">FR</button>
+            <button type="button" data-lang="en" aria-pressed="false">EN</button>
+          </div>
+        </header>
+
+        <div class="start__hero">
+          <div class="start__eyebrow" data-i18n="start.eyebrow">100-Jahre-Fest · Realp 2026</div>
+          <h1 class="start__title" id="start-title">
+            <span data-i18n="start.title1">Heusinger-</span><em data-i18n="start.title2">Steuerung</em>
+          </h1>
+          <p class="start__subtitle" data-i18n="start.subtitle">
+            Wie eine Dampflok ihren Dampf steuert. Interaktiv erklärt.
+          </p>
+
+          <div class="start__cta-row">
+            <button type="button" class="btn btn--primary" id="cta-start" data-i18n="start.cta">
+              Steuerung erkunden
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button type="button" class="btn btn--secondary" id="cta-info" data-i18n="start.ctaInfo">
+              Über das Fest
+            </button>
+          </div>
+        </div>
+
+        <footer class="start__footer">
+          <div class="start__event" data-i18n="start.event">100-Jahre-Fest · 3.–5. Juli 2026</div>
+          <div class="start__event-meta" data-i18n="start.eventMeta">Realp · Festgelände der Dampfbahn Furka-Bergstrecke</div>
+        </footer>
+      </section>
+
+      <!-- =======================================================
+           Modell-Screen
+           ======================================================= -->
+      <section class="screen screen-model" data-screen="model" aria-labelledby="model-title" hidden>
+        <header class="topnav">
+          <div class="topnav__left">
+            <button type="button" class="icon-btn back-btn" data-action="back-to-start" aria-label="Zurück zum Start">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <h2 class="topnav__title" id="model-title" data-i18n="model.title">Modell</h2>
+          <div class="topnav__right">
+            <button type="button" class="icon-btn" data-action="show-help" aria-label="Hilfe anzeigen">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M9.5 9.5c0-1.4 1.1-2.5 2.5-2.5s2.5 1.1 2.5 2.5c0 1.7-2.5 1.8-2.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <circle cx="12" cy="17" r="0.9" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="model__intro">
+          <div class="model__progress">
+            <span class="progress-pill" id="progress-pill">
+              <span class="progress-pill__dot"></span>
+              <span id="progress-text">0/5 entdeckt</span>
+            </span>
+          </div>
+          <p class="model__hint" data-i18n="model.hint">
+            Tippe auf die nummerierten roten Punkte, um die Bauteile zu erkunden.
+          </p>
+        </div>
+
+        <div class="schematic-wrap">
+          <div class="model3d" id="model3d-container">
+            <canvas class="model3d__canvas" id="model3d-canvas" aria-label="Interaktives 3D-Modell der Heusinger-Steuerung"></canvas>
+
+            <div class="model3d__hotspots" id="model3d-hotspots" aria-hidden="false">
+              <button type="button" class="hotspot-3d" data-key="gegenkurbel" data-hotspot="1" aria-label="Bauteil 1: Gegenkurbel">
+                <span class="hotspot-3d__marker"><span class="hotspot-3d__num">1</span></span>
+                <span class="hotspot-3d__check" aria-hidden="true">✓</span>
+              </button>
+              <button type="button" class="hotspot-3d" data-key="schwinge" data-hotspot="2" aria-label="Bauteil 2: Schwinge">
+                <span class="hotspot-3d__marker"><span class="hotspot-3d__num">2</span></span>
+                <span class="hotspot-3d__check" aria-hidden="true">✓</span>
+              </button>
+              <button type="button" class="hotspot-3d" data-key="voreilhebel" data-hotspot="3" aria-label="Bauteil 3: Voreilhebel">
+                <span class="hotspot-3d__marker"><span class="hotspot-3d__num">3</span></span>
+                <span class="hotspot-3d__check" aria-hidden="true">✓</span>
+              </button>
+              <button type="button" class="hotspot-3d" data-key="kreuzkopf" data-hotspot="4" aria-label="Bauteil 4: Kreuzkopf">
+                <span class="hotspot-3d__marker"><span class="hotspot-3d__num">4</span></span>
+                <span class="hotspot-3d__check" aria-hidden="true">✓</span>
+              </button>
+              <button type="button" class="hotspot-3d" data-key="schieber" data-hotspot="5" aria-label="Bauteil 5: Schieber">
+                <span class="hotspot-3d__marker"><span class="hotspot-3d__num">5</span></span>
+                <span class="hotspot-3d__check" aria-hidden="true">✓</span>
+              </button>
+            </div>
+
+            <div class="model3d__controls">
+              <button type="button" class="model3d__btn" id="model3d-reset" aria-label="Ansicht zurücksetzen" title="Ansicht zurücksetzen">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4 4v6h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M20 20v-6h-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M20 10A8 8 0 0 0 6.34 6.34L4 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M4 14a8 8 0 0 0 13.66 3.66L20 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="model3d__loader" id="model3d-loader">
+              <div class="model3d__spinner" aria-hidden="true"></div>
+              <span data-i18n="model.loading">3D-Modell wird geladen</span>
+            </div>
+          </div>
+
+          <div class="schematic-legend" aria-hidden="true">
+            <span class="schematic-legend__item"><span class="schematic-legend__dot">1</span><span data-i18n="comp.gegenkurbel.name">Gegenkurbel</span></span>
+            <span class="schematic-legend__item"><span class="schematic-legend__dot">2</span><span data-i18n="comp.schwinge.name">Schwinge</span></span>
+            <span class="schematic-legend__item"><span class="schematic-legend__dot">3</span><span data-i18n="comp.voreilhebel.name">Voreilhebel</span></span>
+            <span class="schematic-legend__item"><span class="schematic-legend__dot">4</span><span data-i18n="comp.kreuzkopf.name">Kreuzkopf</span></span>
+            <span class="schematic-legend__item"><span class="schematic-legend__dot">5</span><span data-i18n="comp.schieber.name">Schieber</span></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           Detail-Screen (dynamisch befüllt)
+           ======================================================= -->
+      <section class="screen screen-detail" data-screen="detail" aria-labelledby="detail-name" hidden>
+        <header class="topnav">
+          <div class="topnav__left">
+            <button type="button" class="icon-btn back-btn" data-action="back-to-model">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span data-i18n="nav.back">Zurück</span>
+            </button>
+          </div>
+          <h2 class="topnav__title"><span id="detail-progress">1 / 5</span></h2>
+          <div class="topnav__right"></div>
+        </header>
+
+        <div class="detail__hero">
+          <div class="detail__number" id="detail-number">1</div>
+          <h1 class="detail__name" id="detail-name">Gegenkurbel</h1>
+          <p class="detail__lead" id="detail-lead">Der Antrieb der Steuerung.</p>
+        </div>
+
+        <div class="detail__body">
+          <div class="detail__section">
+            <h3 class="detail__section-heading" data-i18n="detail.kurz">Kurz erklärt</h3>
+            <p id="detail-kurz">...</p>
+          </div>
+          <div class="detail__section">
+            <h3 class="detail__section-heading" data-i18n="detail.tech">Technisch vertieft</h3>
+            <p id="detail-tech">...</p>
+          </div>
+
+          <div class="detail__facts" id="detail-facts"></div>
+        </div>
+
+        <div class="detail__illustration">
+          <div id="detail-illustration"></div>
+          <div class="detail__illustration-caption" data-i18n="detail.illustration">Schematisches Detail</div>
+        </div>
+
+        <div class="detail__action">
+          <button type="button" class="btn-mark" id="btn-mark" aria-pressed="false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path id="btn-mark-icon" d="M5 12l4 4 10-10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="btn-mark-text" data-i18n="detail.mark">Als entdeckt markieren</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           Info-Screen
+           ======================================================= -->
+      <section class="screen screen-info" data-screen="info" aria-labelledby="info-title" hidden>
+        <header class="topnav">
+          <div class="topnav__left">
+            <button type="button" class="icon-btn back-btn" data-action="back-to-start" aria-label="Zurück zum Start">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <h2 class="topnav__title" id="info-title" data-i18n="info.title">Info</h2>
+          <div class="topnav__right">
+            <div class="lang-toggle" role="group" aria-label="Sprache wählen">
+              <button type="button" data-lang="de" aria-pressed="true">DE</button>
+              <button type="button" data-lang="fr" aria-pressed="false">FR</button>
+              <button type="button" data-lang="en" aria-pressed="false">EN</button>
+            </div>
+          </div>
+        </header>
+
+        <div class="info__body">
+          <div class="info__notice" id="info-translation-notice" data-i18n="info.translationStatus">
+            Traduction en cours — la version française des textes longs n'est pas encore disponible dans ce prototype.
+          </div>
+
+          <section class="info__section">
+            <h3 class="info__heading" data-i18n="info.h1">Was ist die Heusinger-Steuerung?</h3>
+            <p data-i18n="info.h1.p1">
+              Die Heusinger-Steuerung ist die heute weltweit am häufigsten gebaute Steuerung von Dampflokomotiven. Sie wurde 1849 von Edmund Heusinger von Waldegg patentiert — fast zeitgleich entwickelte der belgische Ingenieur Egide Walschaerts eine sehr ähnliche Konstruktion, weshalb die Steuerung im englischsprachigen Raum als Walschaerts valve gear bekannt ist.
+            </p>
+            <p data-i18n="info.h1.p2">
+              Ihr Vorteil gegenüber älteren Steuerungen: die Bauteile liegen aussen am Rahmen, sind gut zugänglich und einfacher zu warten. Der Lokomotivführer kann den Füllungsgrad stufenlos einstellen und so wirtschaftlich fahren — bei viel Last viel Dampf, bei wenig Last sparsam.
+            </p>
+          </section>
+
+          <section class="info__section">
+            <h3 class="info__heading" data-i18n="info.h2">100 Jahre Furka-Oberalp-Bahn</h3>
+            <p data-i18n="info.h2.p1">
+              Die Bergstrecke über den Furkapass verbindet das Wallis mit dem Bündnerland. Sie wurde in mehreren Etappen gebaut und 1926 vollständig fertiggestellt.
+            </p>
+            <ol class="timeline">
+              <li>
+                <span class="timeline__year">1849</span>
+                <span class="timeline__text" data-i18n="info.tl.1849">Edmund Heusinger von Waldegg meldet sein Steuerungspatent an. Wenige Jahre später entwickelt Egide Walschaerts in Belgien eine fast identische Konstruktion.</span>
+              </li>
+              <li>
+                <span class="timeline__year">1914</span>
+                <span class="timeline__text" data-i18n="info.tl.1914">Eröffnung der Strecke Brig–Gletsch der Brig–Furka–Disentis-Bahn.</span>
+              </li>
+              <li>
+                <span class="timeline__year">1926</span>
+                <span class="timeline__text" data-i18n="info.tl.1926">Vollendung der Bergstrecke mit dem Abschnitt Gletsch–Disentis. Die Strecke verbindet das Wallis mit dem Bündnerland über den Furkapass.</span>
+              </li>
+              <li>
+                <span class="timeline__year">1981</span>
+                <span class="timeline__text" data-i18n="info.tl.1981">Eröffnung des Furka-Basistunnels, die alte Bergstrecke wird stillgelegt.</span>
+              </li>
+              <li>
+                <span class="timeline__year">2010</span>
+                <span class="timeline__text" data-i18n="info.tl.2010">Wiedereröffnung der gesamten Bergstrecke als Dampfbahn Furka-Bergstrecke (DFB) durch den gleichnamigen Verein.</span>
+              </li>
+              <li>
+                <span class="timeline__year">2026</span>
+                <span class="timeline__text" data-i18n="info.tl.2026">100 Jahre durchgehende Bergstrecke. Die DFB feiert das Jubiläum mit dem 100-Jahre-Fest in Realp.</span>
+              </li>
+            </ol>
+          </section>
+
+          <section class="info__section">
+            <h3 class="info__heading" data-i18n="info.h3">Über diese Anwendung</h3>
+            <p data-i18n="info.h3.p1">
+              Diese interaktive Web-Anwendung ist im Rahmen des Moduls 322 als Prototyp für die Jubiläumsausstellung der Dampfbahn Furka-Bergstrecke entstanden. Sie soll Festbesucherinnen und -besucher beim Ausstellungsobjekt der Heusinger-Steuerung mit kurzen, verständlichen Erklärungen unterstützen.
+            </p>
+            <p data-i18n="info.h3.p2">
+              Die Anwendung ersetzt keinen ausgebildeten Lokomotivführer und stellt nur eine vereinfachte schematische Darstellung der Steuerung dar.
+            </p>
+            <div class="credits">
+              <strong data-i18n="info.credits">Gruppe 24 · GBS St. Gallen</strong>
+              Novak Djuric · Finn Müller · Benjamin Dedic<br/>
+              Modul 322 · WMS · Juni 2026
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <!-- =======================================================
+           Tab-Bar (nur auf Modell + Info sichtbar)
+           ======================================================= -->
+      <nav class="tabbar" id="tabbar" role="tablist" aria-label="Hauptnavigation" hidden>
+        <button type="button" class="tab" role="tab" data-tab="model" aria-selected="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/>
+            <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+            <path d="M12 3v2M12 19v2M3 12h2M19 12h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <span data-i18n="tab.model">Modell</span>
+        </button>
+        <button type="button" class="tab" role="tab" data-tab="info" aria-selected="false">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M12 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="12" cy="7.5" r="1" fill="currentColor"/>
+          </svg>
+          <span data-i18n="tab.info">Info</span>
+        </button>
+      </nav>
+
+      <!-- =======================================================
+           Hilfe-Overlay
+           ======================================================= -->
+      <div class="help-overlay" id="help-overlay" role="dialog" aria-labelledby="help-title" aria-modal="true" hidden>
+        <div class="help-card">
+          <div class="help-card__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3 class="help-card__title" id="help-title" data-i18n="help.title">Wie es funktioniert</h3>
+          <p class="help-card__body" data-i18n="help.body">
+            Tippe auf einen nummerierten roten Punkt, um mehr über das Bauteil zu erfahren. Du kannst alle fünf Bauteile in beliebiger Reihenfolge entdecken.
+          </p>
+          <button type="button" class="help-card__cta" id="help-dismiss" data-i18n="help.cta">Verstanden</button>
+        </div>
+      </div>
+
+      <!-- =======================================================
+           Toast-Container
+           ======================================================= -->
+      <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+    </div>
+  </div>
+
+  <script>
+    // =============================================================
+    //  Daten — Bauteile (DE komplett, FR nur Name + Leitsatz)
+    // =============================================================
+    const COMPONENTS = {
+      gegenkurbel: {
+        number: 1,
+        name:     { de: "Gegenkurbel",            fr: "Contre-manivelle",      en: "Return crank" },
+        lead:     {
+          de: "Der Antrieb der Steuerung — sie nimmt die Drehbewegung des Rads ab.",
+          fr: "L'entraînement de la distribution — elle prélève le mouvement de rotation de la roue.",
+          en: "The drive of the valve gear — it picks up the rotational motion of the wheel."
+        },
+        kurz: "Die Gegenkurbel sitzt versetzt zur Hauptkurbel auf der Treibachse. Während sich das Rad dreht, beschreibt ihr Zapfen einen Kreis und liefert so eine zeitlich versetzte Antriebsbewegung für die ganze Steuerung.",
+        tech: "Der Versatz zur Hauptkurbel beträgt typisch 90° — die Gegenkurbel eilt der Hauptkurbel also um eine Vierteldrehung voraus. Über die Schwingenstange (Exzenterstange) wird die Bewegung auf die Schwinge übertragen. Ohne Gegenkurbel müsste ein klassischer Exzenter auf der Achse sitzen — die Heusinger-Steuerung kommt mit der Gegenkurbel aus und ist dadurch von aussen zugänglich, was Wartung und Reparatur deutlich erleichtert.",
+        facts: [
+          { label: "Lage",     value: "an der Treibachse" },
+          { label: "Versatz",  value: "ca. 90° zur Hauptkurbel" },
+          { label: "Funktion", value: "Antriebsabgriff" }
+        ]
+      },
+      schwinge: {
+        number: 2,
+        name:     { de: "Schwinge (Kulisse)",     fr: "Coulisse",              en: "Expansion link" },
+        lead:     {
+          de: "Hier wird gewählt: vorwärts, rückwärts — oder dazwischen.",
+          fr: "C'est ici que le sens est choisi : avant, arrière — ou entre les deux.",
+          en: "This is where direction is set: forward, reverse — or anywhere in between."
+        },
+        kurz: "Die Schwinge ist ein gekrümmtes, geschlitztes Bauteil, das in der Mitte gelagert ist und um diesen Drehpunkt pendelt. Die Krümmung folgt einem Kreisbogen — sie macht die stufenlose Stellung der Steuerung möglich.",
+        tech: "Die Schwingenstange greift unten an der Schwinge an und versetzt sie in eine pendelnde Bewegung. Im Schlitz der Schwinge gleitet der Schwingenstein. Je nachdem, wo sich der Stein im Schlitz befindet, ändert sich die Amplitude und die Phasenlage der weitergegebenen Bewegung. Steht der Stein oben, läuft die Lok vorwärts, steht er unten, rückwärts — und in Mittelstellung steht die Steuerung still. Das ist eine der zentralen Erfindungen Heusingers: die kontinuierliche, stufenlose Steuerung des Füllungsgrads.",
+        facts: [
+          { label: "Form",      value: "Kreisbogen-Schlitz" },
+          { label: "Lagerung",  value: "mittig pendelnd" },
+          { label: "Funktion",  value: "Richtung & Füllung" }
+        ]
+      },
+      voreilhebel: {
+        number: 3,
+        name:     { de: "Voreilhebel",            fr: "Levier d'avance",       en: "Combination lever" },
+        lead:     {
+          de: "Er sorgt für den richtigen Moment — den minimalen Voreilweg des Schiebers.",
+          fr: "Il assure le bon moment — la légère avance du tiroir.",
+          en: "It provides the right timing — the small lead of the valve."
+        },
+        kurz: "Der Voreilhebel addiert zwei Bewegungen: die Hauptbewegung aus der Schwinge und einen kleinen Anteil aus der Kolbenbewegung selbst. So bekommt der Schieber den richtigen Voreilweg, also den minimalen Vorlauf, mit dem er das Einlassventil rechtzeitig öffnet.",
+        tech: "Konstruktiv ist der Voreilhebel ein dreigliedriger Hebel: oben greift die Schieberstange (zum Schieber), in der Mitte die Schwingenstange (vom Schwingenstein) und unten die Lenkerstange (vom Kreuzkopf). Der Anteil aus dem Kreuzkopf ist klein, aber entscheidend — er liefert die zur Kolbenposition proportionale Komponente. Ohne diesen Voreilanteil würde der Schieber den Dampfeinlass zu spät öffnen, der Wirkungsgrad sänke.",
+        facts: [
+          { label: "Bauart",   value: "dreigliedriger Hebel" },
+          { label: "Eingänge", value: "Schwinge + Kreuzkopf" },
+          { label: "Ausgang",  value: "Schieberstange" }
+        ]
+      },
+      kreuzkopf: {
+        number: 4,
+        name:     { de: "Kreuzkopf",              fr: "Crosse",                en: "Crosshead" },
+        lead:     {
+          de: "Er führt die Kolbenstange geradlinig — und liefert dem Voreilhebel die zweite Bewegung.",
+          fr: "Il guide la tige du piston en ligne droite — et fournit au levier d'avance le second mouvement.",
+          en: "It guides the piston rod in a straight line — and provides the second motion to the combination lever."
+        },
+        kurz: "Der Kreuzkopf verbindet die Kolbenstange mit der Treibstange. Damit der Kolben sauber im Zylinder läuft, wird der Kreuzkopf in geradlinigen Gleitbahnen geführt — so kann er die seitlichen Kräfte aufnehmen, die durch die schräge Stellung der Treibstange entstehen.",
+        tech: "Vom Kreuzkopf zweigt zusätzlich die Lenkerstange ab, die zum Voreilhebel führt. Damit ist der Kreuzkopf die mechanische Quelle für den Voreilanteil der Steuerung: Seine Bewegung ist eins zu eins die Kolbenbewegung, und genau diese wird, stark untersetzt, dem Schieberweg zuaddiert.",
+        facts: [
+          { label: "Führung",   value: "geradlinige Gleitbahn" },
+          { label: "Verbindet", value: "Kolben- & Treibstange" },
+          { label: "Abgriff",   value: "Lenkerstange" }
+        ]
+      },
+      schieber: {
+        number: 5,
+        name:     { de: "Schieber",               fr: "Tiroir",                en: "Piston valve" },
+        lead:     {
+          de: "Das eigentliche Steuerorgan: er lässt Dampf ein und aus.",
+          fr: "L'organe de distribution proprement dit : il fait entrer et sortir la vapeur.",
+          en: "The actual control element: it lets steam in and out."
+        },
+        kurz: "Der Schieber öffnet und schliesst die Kanäle zum Zylinder. Er ist das Ausgangsglied der ganzen Steuerung: alles, was die Schwinge und der Voreilhebel davor an Bewegung erzeugen, läuft hier zusammen.",
+        tech: "Der Schieber bewegt sich linear über den Dampfkanälen. Sein Hub bestimmt, wie lange ein Kanal offen ist — und damit den Füllungsgrad, also wie viel Dampf pro Hub in den Zylinder strömt. In Vorwärtsstellung öffnet der Schieber zuerst den vorderen Kanal, in Rückwärtsstellung zuerst den hinteren. Die Heusinger-Steuerung ist eine sogenannte Aussensteuerung: der Schieber lässt den Dampf von aussen ein, was sie robust und gut zugänglich macht.",
+        facts: [
+          { label: "Bewegung", value: "linear" },
+          { label: "Bestimmt", value: "Füllungsgrad" },
+          { label: "Bauart",   value: "Aussensteuerung" }
+        ]
+      }
+    };
+
+    const ORDER = ["gegenkurbel", "schwinge", "voreilhebel", "kreuzkopf", "schieber"];
+
+    // =============================================================
+    //  Mini-i18n
+    // =============================================================
+    const I18N = {
+      de: {
+        "start.wordmarkSub": "Bergstrecke",
+        "start.eyebrow":     "100-Jahre-Fest · Realp 2026",
+        "start.title1":      "Heusinger-",
+        "start.title2":      "Steuerung",
+        "start.subtitle":    "Wie eine Dampflok ihren Dampf steuert. Interaktiv erklärt.",
+        "start.cta":         "Steuerung erkunden",
+        "start.ctaInfo":     "Über das Fest",
+        "start.event":       "100-Jahre-Fest · 3.–5. Juli 2026",
+        "start.eventMeta":   "Realp · Festgelände der Dampfbahn Furka-Bergstrecke",
+        "model.title":       "Modell",
+        "model.hint":        "Drehe das 3D-Modell mit dem Finger und tippe auf die nummerierten roten Punkte.",
+        "model.progress":    "{n}/5 entdeckt",
+        "model.loading":     "3D-Modell wird geladen",
+        "model.error":       "3D-Modell konnte nicht geladen werden.",
+        "detail.kurz":       "Kurz erklärt",
+        "detail.tech":       "Technisch vertieft",
+        "detail.mark":       "Als entdeckt markieren",
+        "detail.marked":     "Als entdeckt markiert",
+        "detail.toast":      "Bauteil als entdeckt markiert",
+        "detail.illustration": "Schematisches Detail",
+        "info.title":        "Info",
+        "info.h1":           "Was ist die Heusinger-Steuerung?",
+        "info.h2":           "100 Jahre Furka-Oberalp-Bahn",
+        "info.h3":           "Über diese Anwendung",
+        "info.credits":      "Gruppe 24 · GBS St. Gallen",
+        "info.translationStatus": "",
+        "tab.model":         "Modell",
+        "tab.info":          "Info",
+        "help.title":        "Wie es funktioniert",
+        "help.body":         "Drehe das 3D-Modell mit dem Finger, um es aus jeder Seite zu betrachten. Tippe auf einen nummerierten roten Punkt, um mehr über das Bauteil zu erfahren. Du kannst alle fünf Bauteile in beliebiger Reihenfolge entdecken.",
+        "help.cta":          "Verstanden",
+        "nav.back":          "Zurück",
+        "comp.gegenkurbel.name":  "Gegenkurbel",
+        "comp.schwinge.name":     "Schwinge",
+        "comp.voreilhebel.name":  "Voreilhebel",
+        "comp.kreuzkopf.name":    "Kreuzkopf",
+        "comp.schieber.name":     "Schieber"
+      },
+      fr: {
+        "start.wordmarkSub": "Ligne de montagne",
+        "start.eyebrow":     "100 ans · Realp 2026",
+        "start.title1":      "Distribution",
+        "start.title2":      "Heusinger",
+        "start.subtitle":    "Comment une locomotive à vapeur dirige sa vapeur. Expliqué de façon interactive.",
+        "start.cta":         "Découvrir la distribution",
+        "start.ctaInfo":     "À propos de la fête",
+        "start.event":       "100 ans · 3–5 juillet 2026",
+        "start.eventMeta":   "Realp · site de la Furka-Bergstrecke",
+        "model.title":       "Modèle",
+        "model.hint":        "Fais tourner le modèle 3D avec le doigt et tape sur les points rouges numérotés.",
+        "model.progress":    "{n}/5 découverts",
+        "model.loading":     "Chargement du modèle 3D",
+        "model.error":       "Le modèle 3D n'a pas pu être chargé.",
+        "detail.kurz":       "Expliqué brièvement",
+        "detail.tech":       "Détails techniques",
+        "detail.mark":       "Marquer comme découvert",
+        "detail.marked":     "Marqué comme découvert",
+        "detail.toast":      "Composant marqué comme découvert",
+        "detail.illustration": "Détail schématique",
+        "info.title":        "Info",
+        "info.h1":           "Qu'est-ce que la distribution Heusinger ?",
+        "info.h2":           "100 ans Furka-Oberalp-Bahn",
+        "info.h3":           "À propos de cette application",
+        "info.credits":      "Groupe 24 · GBS St-Gall",
+        "info.translationStatus": "Traduction en cours — la version française des textes longs n'est pas encore disponible dans ce prototype.",
+        "tab.model":         "Modèle",
+        "tab.info":          "Info",
+        "help.title":        "Comment ça marche",
+        "help.body":         "Fais tourner le modèle 3D avec le doigt pour le voir sous tous les angles. Tape sur un point rouge numéroté pour en savoir plus sur le composant. Tu peux découvrir les cinq composants dans n'importe quel ordre.",
+        "help.cta":          "Compris",
+        "nav.back":          "Retour",
+        "comp.gegenkurbel.name":  "Contre-manivelle",
+        "comp.schwinge.name":     "Coulisse",
+        "comp.voreilhebel.name":  "Levier d'avance",
+        "comp.kreuzkopf.name":    "Crosse",
+        "comp.schieber.name":     "Tiroir"
+      },
+      en: {
+        "start.wordmarkSub": "Mountain Line",
+        "start.eyebrow":     "100-Year Festival · Realp 2026",
+        "start.title1":      "Walschaerts",
+        "start.title2":      "Valve Gear",
+        "start.subtitle":    "How a steam locomotive controls its steam. Explained interactively.",
+        "start.cta":         "Explore the valve gear",
+        "start.ctaInfo":     "About the festival",
+        "start.event":       "100-Year Festival · 3–5 July 2026",
+        "start.eventMeta":   "Realp · festival grounds of the Furka steam railway",
+        "model.title":       "Model",
+        "model.hint":        "Rotate the 3D model with your finger and tap the numbered red dots.",
+        "model.progress":    "{n}/5 discovered",
+        "model.loading":     "Loading 3D model",
+        "model.error":       "The 3D model could not be loaded.",
+        "detail.kurz":       "In short",
+        "detail.tech":       "Technical detail",
+        "detail.mark":       "Mark as discovered",
+        "detail.marked":     "Marked as discovered",
+        "detail.toast":      "Component marked as discovered",
+        "detail.illustration": "Schematic detail",
+        "info.title":        "Info",
+        "info.h1":           "What is the Walschaerts valve gear?",
+        "info.h2":           "100 years of the Furka-Oberalp Railway",
+        "info.h3":           "About this application",
+        "info.credits":      "Group 24 · GBS St. Gallen",
+        "info.translationStatus": "Translation in progress — the English version of the long-form texts is not yet available in this prototype.",
+        "tab.model":         "Model",
+        "tab.info":          "Info",
+        "help.title":        "How it works",
+        "help.body":         "Rotate the 3D model with your finger to view it from any side. Tap a numbered red dot to learn more about that component. You can discover all five components in any order.",
+        "help.cta":          "Got it",
+        "nav.back":          "Back",
+        "comp.gegenkurbel.name":  "Return crank",
+        "comp.schwinge.name":     "Expansion link",
+        "comp.voreilhebel.name":  "Combination lever",
+        "comp.kreuzkopf.name":    "Crosshead",
+        "comp.schieber.name":     "Piston valve"
+      }
+    };
+
+    // =============================================================
+    //  Bauteil-Illustrationen (eigene SVG je Detail)
+    // =============================================================
+    const ILLUSTRATIONS = {
+      gegenkurbel: `
+        <svg viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="0" y="0" width="220" height="180" fill="transparent"/>
+          <circle cx="130" cy="100" r="60" fill="#efe6d2" stroke="#1a1a1a" stroke-width="2"/>
+          <circle cx="130" cy="100" r="48" fill="none" stroke="#1a1a1a" stroke-width="0.8"/>
+          <line x1="130" y1="40" x2="130" y2="160" stroke="#1a1a1a" stroke-width="1.4"/>
+          <line x1="70"  y1="100" x2="190" y2="100" stroke="#1a1a1a" stroke-width="1.4"/>
+          <line x1="88"  y1="58"  x2="172" y2="142" stroke="#1a1a1a" stroke-width="1.4"/>
+          <line x1="88"  y1="142" x2="172" y2="58"  stroke="#1a1a1a" stroke-width="1.4"/>
+          <circle cx="130" cy="100" r="9" fill="#1a1a1a"/>
+          <line x1="130" y1="100" x2="92" y2="68" stroke="#A31A1B" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="92" cy="68" r="5" fill="#A31A1B" stroke="#fff" stroke-width="1.5"/>
+          <text x="80" y="48" font-family="Oswald, sans-serif" font-size="11" font-weight="500" fill="#A31A1B" letter-spacing="0.05em">GEGENKURBEL</text>
+          <text x="142" y="98" font-family="Oswald, sans-serif" font-size="9" fill="#6f6a5d" letter-spacing="0.05em">TREIBACHSE</text>
+          <path d="M 105 80 A 35 35 0 0 1 130 75" fill="none" stroke="#143A84" stroke-width="1" stroke-dasharray="3 2"/>
+          <text x="103" y="73" font-family="Oswald, sans-serif" font-size="9" fill="#143A84">~ 90°</text>
+        </svg>`,
+      schwinge: `
+        <svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Schwinge gross dargestellt -->
+          <path d="M 100 30 Q 160 100 100 170" fill="none" stroke="#1a1a1a" stroke-width="3"/>
+          <path d="M 100 50 Q 140 100 100 150" fill="none" stroke="#1a1a1a" stroke-width="3"/>
+          <line x1="100" y1="30" x2="100" y2="50" stroke="#1a1a1a" stroke-width="3"/>
+          <line x1="100" y1="170" x2="100" y2="150" stroke="#1a1a1a" stroke-width="3"/>
+          <!-- Drehpunkt -->
+          <line x1="143" y1="100" x2="180" y2="100" stroke="#1a1a1a" stroke-width="1.4"/>
+          <circle cx="143" cy="100" r="6" fill="#1a1a1a"/>
+          <circle cx="180" cy="100" r="4" fill="none" stroke="#1a1a1a" stroke-width="1.4"/>
+          <!-- Stein in Mittelposition -->
+          <rect x="106" y="94" width="14" height="14" fill="#fff" stroke="#A31A1B" stroke-width="2.5"/>
+          <!-- Pfeile -->
+          <line x1="60" y1="60" x2="60" y2="40" stroke="#143A84" stroke-width="1.4" marker-end="url(#arrowUp)"/>
+          <line x1="60" y1="140" x2="60" y2="160" stroke="#143A84" stroke-width="1.4" marker-end="url(#arrowDn)"/>
+          <defs>
+            <marker id="arrowUp" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#143A84"/>
+            </marker>
+            <marker id="arrowDn" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#143A84"/>
+            </marker>
+          </defs>
+          <text x="38" y="30" font-family="Oswald, sans-serif" font-size="9" fill="#143A84" letter-spacing="0.05em">VORWÄRTS</text>
+          <text x="38" y="180" font-family="Oswald, sans-serif" font-size="9" fill="#143A84" letter-spacing="0.05em">RÜCKWÄRTS</text>
+          <text x="125" y="115" font-family="Oswald, sans-serif" font-size="9" fill="#A31A1B" font-weight="500">STEIN</text>
+          <text x="148" y="93" font-family="Oswald, sans-serif" font-size="9" fill="#6f6a5d">PIVOT</text>
+        </svg>`,
+      voreilhebel: `
+        <svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Voreilhebel vertikal mit drei Anschlüssen -->
+          <line x1="110" y1="20" x2="125" y2="180" stroke="#1a1a1a" stroke-width="3"/>
+          <!-- Pivot oben (zur Schieberstange) -->
+          <line x1="110" y1="20" x2="30" y2="40" stroke="#1a1a1a" stroke-width="2"/>
+          <circle cx="110" cy="20" r="5" fill="#A31A1B" stroke="#fff" stroke-width="1.5"/>
+          <text x="30" y="32" font-family="Oswald, sans-serif" font-size="9" fill="#1a1a1a" letter-spacing="0.05em">→ SCHIEBERSTANGE</text>
+          <!-- Pivot Mitte (vom Stein) -->
+          <line x1="118" y1="100" x2="200" y2="80" stroke="#1a1a1a" stroke-width="2"/>
+          <circle cx="118" cy="100" r="5" fill="#A31A1B" stroke="#fff" stroke-width="1.5"/>
+          <text x="135" y="76" font-family="Oswald, sans-serif" font-size="9" fill="#1a1a1a" letter-spacing="0.05em">← SCHWINGE</text>
+          <!-- Pivot unten (vom Kreuzkopf) -->
+          <line x1="125" y1="180" x2="200" y2="170" stroke="#1a1a1a" stroke-width="2"/>
+          <circle cx="125" cy="180" r="5" fill="#A31A1B" stroke="#fff" stroke-width="1.5"/>
+          <text x="140" y="195" font-family="Oswald, sans-serif" font-size="9" fill="#1a1a1a" letter-spacing="0.05em">← KREUZKOPF</text>
+          <!-- Beschriftung -->
+          <text x="78" y="110" font-family="Oswald, sans-serif" font-size="10" font-weight="500" fill="#A31A1B" letter-spacing="0.05em" text-anchor="end">HEBEL</text>
+        </svg>`,
+      kreuzkopf: `
+        <svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Gleitbahnen -->
+          <line x1="20"  y1="60"  x2="200" y2="60"  stroke="#1a1a1a" stroke-width="2"/>
+          <line x1="20"  y1="110" x2="200" y2="110" stroke="#1a1a1a" stroke-width="2"/>
+          <!-- Schraffur Gleitbahn oben/unten -->
+          <g stroke="#6f6a5d" stroke-width="0.6">
+            <line x1="20" y1="56" x2="200" y2="56"/>
+            <line x1="20" y1="114" x2="200" y2="114"/>
+          </g>
+          <!-- Kreuzkopf -->
+          <rect x="90" y="62" width="50" height="46" fill="#BC9D97" stroke="#1a1a1a" stroke-width="2"/>
+          <!-- Kolbenstange links -->
+          <line x1="20" y1="85" x2="90" y2="85" stroke="#1a1a1a" stroke-width="3"/>
+          <!-- Treibstange rechts -->
+          <line x1="140" y1="92" x2="210" y2="130" stroke="#1a1a1a" stroke-width="3"/>
+          <circle cx="140" cy="92" r="4" fill="#1a1a1a"/>
+          <!-- Lenkerstange-Abzweig (nach oben/aussen) -->
+          <line x1="135" y1="62" x2="165" y2="30" stroke="#A31A1B" stroke-width="2.5"/>
+          <circle cx="135" cy="62" r="5" fill="#A31A1B" stroke="#fff" stroke-width="1.5"/>
+          <text x="155" y="20" font-family="Oswald, sans-serif" font-size="9" fill="#A31A1B" letter-spacing="0.05em">→ VOREILHEBEL</text>
+          <text x="34" y="78" font-family="Oswald, sans-serif" font-size="9" fill="#6f6a5d" letter-spacing="0.05em">KOLBENSTANGE</text>
+          <text x="148" y="138" font-family="Oswald, sans-serif" font-size="9" fill="#6f6a5d" letter-spacing="0.05em">TREIBSTANGE</text>
+          <text x="115" y="89" font-family="Oswald, sans-serif" font-size="10" font-weight="500" fill="#1a1a1a" text-anchor="middle">KREUZKOPF</text>
+        </svg>`,
+      schieber: `
+        <svg viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Schieberkasten -->
+          <rect x="30" y="50" width="160" height="50" fill="#BC9D97" stroke="#1a1a1a" stroke-width="2"/>
+          <!-- Schieber (T-förmig vereinfacht als Block) -->
+          <rect x="80" y="62" width="60" height="26" fill="#fff" stroke="#1a1a1a" stroke-width="2"/>
+          <!-- Schieberstange -->
+          <line x1="140" y1="75" x2="200" y2="75" stroke="#1a1a1a" stroke-width="2.5"/>
+          <!-- Pfeil Schieberstange -->
+          <line x1="160" y1="58" x2="180" y2="58" stroke="#A31A1B" stroke-width="1.4" marker-end="url(#arrLin)"/>
+          <line x1="180" y1="92" x2="160" y2="92" stroke="#A31A1B" stroke-width="1.4" marker-end="url(#arrLin)"/>
+          <defs>
+            <marker id="arrLin" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#A31A1B"/>
+            </marker>
+          </defs>
+          <!-- Dampfkanäle nach unten -->
+          <line x1="50" y1="100" x2="50" y2="120" stroke="#1a1a1a" stroke-width="2"/>
+          <line x1="170" y1="100" x2="170" y2="120" stroke="#1a1a1a" stroke-width="2"/>
+          <line x1="110" y1="100" x2="110" y2="120" stroke="#1a1a1a" stroke-width="2"/>
+          <!-- Zylinder darunter angedeutet -->
+          <rect x="30" y="120" width="160" height="40" fill="#BC9D97" stroke="#1a1a1a" stroke-width="2"/>
+          <text x="110" y="148" font-family="Oswald, sans-serif" font-size="9" fill="#6f6a5d" text-anchor="middle" letter-spacing="0.05em">ZYLINDER</text>
+          <text x="110" y="42" font-family="Oswald, sans-serif" font-size="9" fill="#A31A1B" text-anchor="middle" letter-spacing="0.05em">LINEAR &harr;</text>
+          <text x="110" y="80" font-family="Oswald, sans-serif" font-size="10" font-weight="500" fill="#1a1a1a" text-anchor="middle">SCHIEBER</text>
+        </svg>`
+    };
+
+    // =============================================================
+    //  State (rein in-memory — passt zum Festival-Use-Case)
+    // =============================================================
+    const state = {
+      lang: "de",
+      currentScreen: "start",
+      currentDetail: null,
+      discovered: new Set(),
+      helpShownThisSession: false
+    };
+
+    // =============================================================
+    //  Hilfsfunktionen
+    // =============================================================
+    function t(key) {
+      return I18N[state.lang][key] ?? I18N.de[key] ?? null;
+    }
+
+    function applyTranslations() {
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        const val = t(key);
+        if (val !== null && val !== "") el.textContent = val;
+      });
+      // Sprache am <html> setzen
+      document.documentElement.setAttribute("lang", state.lang);
+      // Sprachumschalter synchronisieren
+      document.querySelectorAll(".lang-toggle button").forEach(btn => {
+        btn.setAttribute("aria-pressed", String(btn.dataset.lang === state.lang));
+      });
+      // Hinweis: FR / EN → langer Body bleibt DE → Banner einblenden
+      const notice = document.getElementById("info-translation-notice");
+      if (notice) {
+        notice.classList.toggle("visible", state.lang === "fr" || state.lang === "en");
+      }
+    }
+
+    function showScreen(name) {
+      const screens = document.querySelectorAll(".screen");
+      screens.forEach(s => {
+        s.hidden = s.dataset.screen !== name;
+      });
+      state.currentScreen = name;
+
+      // Tab-Bar nur auf model/info zeigen
+      const tabbar = document.getElementById("tabbar");
+      const showTabbar = (name === "model" || name === "info");
+      tabbar.hidden = !showTabbar;
+      if (showTabbar) {
+        tabbar.querySelectorAll(".tab").forEach(tab => {
+          tab.setAttribute("aria-selected", String(tab.dataset.tab === name));
+        });
+      }
+
+      // Scroll-Reset bei Screen-Wechsel
+      const screen = document.querySelector(`.screen[data-screen="${name}"]`);
+      if (screen) screen.scrollTop = 0;
+
+      // Beim ersten Aufruf von "model" zeigen wir das Hilfe-Overlay
+      if (name === "model" && !state.helpShownThisSession) {
+        setTimeout(showHelp, 280);
+      }
+    }
+
+    function updateProgress() {
+      const n = state.discovered.size;
+      const tpl = I18N[state.lang]["model.progress"];
+      document.getElementById("progress-text").textContent = tpl.replace("{n}", n);
+      const pill = document.getElementById("progress-pill");
+      pill.classList.toggle("complete", n === 5);
+
+      // Hotspot-Marker auf "discovered" stellen (3D-Variante)
+      document.querySelectorAll(".hotspot-3d").forEach(h => {
+        const key = h.dataset.key;
+        h.classList.toggle("discovered", state.discovered.has(key));
+      });
+    }
+
+    function openDetail(key) {
+      const c = COMPONENTS[key];
+      if (!c) return;
+      state.currentDetail = key;
+
+      document.getElementById("detail-number").textContent = c.number;
+      document.getElementById("detail-progress").textContent = `${c.number} / 5`;
+      document.getElementById("detail-name").textContent = c.name[state.lang] ?? c.name.de;
+      document.getElementById("detail-lead").textContent = c.lead[state.lang] ?? c.lead.de;
+      document.getElementById("detail-kurz").textContent = c.kurz;
+      document.getElementById("detail-tech").textContent = c.tech;
+
+      // Facts
+      const facts = document.getElementById("detail-facts");
+      facts.innerHTML = "";
+      c.facts.forEach(f => {
+        const row = document.createElement("div");
+        row.className = "fact";
+        row.innerHTML = `
+          <span class="fact__label">${f.label}</span>
+          <span class="fact__value">${f.value}</span>
+        `;
+        facts.appendChild(row);
+      });
+
+      // Illustration
+      const ill = document.getElementById("detail-illustration");
+      ill.innerHTML = ILLUSTRATIONS[key] ?? "";
+
+      // Mark-Button-Zustand
+      const btn = document.getElementById("btn-mark");
+      const txt = document.getElementById("btn-mark-text");
+      if (state.discovered.has(key)) {
+        btn.setAttribute("aria-pressed", "true");
+        txt.textContent = t("detail.marked");
+      } else {
+        btn.setAttribute("aria-pressed", "false");
+        txt.textContent = t("detail.mark");
+      }
+
+      showScreen("detail");
+    }
+
+    function markDiscovered(key) {
+      if (state.discovered.has(key)) return;
+      state.discovered.add(key);
+      updateProgress();
+
+      // Button-Zustand
+      const btn = document.getElementById("btn-mark");
+      const txt = document.getElementById("btn-mark-text");
+      btn.setAttribute("aria-pressed", "true");
+      txt.textContent = t("detail.marked");
+
+      // Toast
+      showToast(t("detail.toast"), "success");
+
+      // Bei kompletter Erkundung: Sondertoast
+      if (state.discovered.size === 5) {
+        setTimeout(() => {
+          let msg;
+          if (state.lang === "fr")      msg = "Tous les composants découverts — bravo !";
+          else if (state.lang === "en") msg = "All components discovered — well done!";
+          else                          msg = "Alle Bauteile entdeckt — gut gemacht!";
+          showToast(msg, "success");
+        }, 600);
+      }
+    }
+
+    function showToast(msg, variant = "") {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = "toast" + (variant ? " toast--" + variant : "");
+      toast.textContent = msg;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 2800);
+    }
+
+    function showHelp() {
+      document.getElementById("help-overlay").hidden = false;
+      state.helpShownThisSession = true;
+    }
+    function hideHelp() {
+      document.getElementById("help-overlay").hidden = true;
+    }
+
+    function setLang(lang) {
+      if (!I18N[lang]) return;
+      state.lang = lang;
+      applyTranslations();
+      // Falls Detail offen ist, neu rendern (für name/lead)
+      if (state.currentScreen === "detail" && state.currentDetail) {
+        const c = COMPONENTS[state.currentDetail];
+        document.getElementById("detail-name").textContent = c.name[lang] ?? c.name.de;
+        document.getElementById("detail-lead").textContent = c.lead[lang] ?? c.lead.de;
+        const txt = document.getElementById("btn-mark-text");
+        txt.textContent = state.discovered.has(state.currentDetail) ? t("detail.marked") : t("detail.mark");
+      }
+      updateProgress();
+    }
+
+    // =============================================================
+    //  Event-Binding
+    // =============================================================
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTranslations();
+      updateProgress();
+
+      // Start-CTAs
+      document.getElementById("cta-start").addEventListener("click", () => showScreen("model"));
+      document.getElementById("cta-info").addEventListener("click", () => showScreen("info"));
+
+      // Sprache (alle Toggles am Dokument)
+      document.querySelectorAll(".lang-toggle button").forEach(btn => {
+        btn.addEventListener("click", () => setLang(btn.dataset.lang));
+      });
+
+      // Hotspots (Klick + Tastatur) — 3D-Variante
+      document.querySelectorAll(".hotspot-3d").forEach(h => {
+        const key = h.dataset.key;
+        h.addEventListener("click", () => openDetail(key));
+        h.addEventListener("keydown", e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openDetail(key);
+          }
+        });
+      });
+
+      // Tab-Bar
+      document.querySelectorAll(".tab").forEach(tab => {
+        tab.addEventListener("click", () => showScreen(tab.dataset.tab));
+      });
+
+      // Aktions-Buttons im Top-Nav
+      document.querySelectorAll("[data-action]").forEach(btn => {
+        const action = btn.dataset.action;
+        btn.addEventListener("click", () => {
+          if (action === "back-to-start") showScreen("start");
+          else if (action === "back-to-model") showScreen("model");
+          else if (action === "show-help") showHelp();
+        });
+      });
+
+      // Hilfe-Overlay schliessen
+      document.getElementById("help-dismiss").addEventListener("click", hideHelp);
+      document.getElementById("help-overlay").addEventListener("click", e => {
+        if (e.target.id === "help-overlay") hideHelp();
+      });
+
+      // Markieren-Button
+      document.getElementById("btn-mark").addEventListener("click", () => {
+        if (state.currentDetail) markDiscovered(state.currentDetail);
+      });
+
+      // Escape schliesst Overlay/Detail
+      document.addEventListener("keydown", e => {
+        if (e.key !== "Escape") return;
+        if (!document.getElementById("help-overlay").hidden) {
+          hideHelp();
+        } else if (state.currentScreen === "detail") {
+          showScreen("model");
+        }
+      });
+    });
+  </script>
+
+  <script type="module">
+    // =============================================================
+    //  3D-Modell (Three.js + GLTFLoader + OrbitControls)
+    //  Lädt das GLB "walschaerts_valve_gear.glb" aus dem gleichen
+    //  Verzeichnis. Hotspots sind HTML-Elemente, die jeden Frame
+    //  auf die 3D-Position der zugeordneten Modell-Node projiziert
+    //  werden — sie drehen sich mit dem Modell mit.
+    // =============================================================
+    import * as THREE from "three";
+    import { GLTFLoader }    from "three/addons/loaders/GLTFLoader.js";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+    // Mapping: welcher Hotspot-Key zeigt auf welche Node im GLB?
+    // (Walschaerts-/Heusinger-Modell von Sketchfab)
+    const HOTSPOT_NODE_MAP = {
+      gegenkurbel: "Eccentric_Rod_24",   // Excenterstange (führt zur Gegenkurbel am Rad)
+      schwinge:    "Expansion_Link_26",  // Schwinge
+      voreilhebel: "Rod3_29",            // Combination Lever = Voreilhebel
+      kreuzkopf:   "Pistons_15",         // Kreuzkopf-/Kolbengruppe
+      schieber:    "Piston valves_35"    // Schieber (piston valve)
+    };
+
+    // Manuelle Mikro-Offsets (in lokalen Modell-Einheiten), falls
+    // die Bounding-Box-Mitte einer Node nicht exakt am Bauteil sitzt.
+    const HOTSPOT_OFFSET = {
+      gegenkurbel: [0, 0, 0],
+      schwinge:    [0, 0, 0],
+      voreilhebel: [0, 0, 0],
+      kreuzkopf:   [0, 0, 0],
+      schieber:    [0, 0, 0]
+    };
+
+    let scene, camera, renderer, controls;
+    let modelRoot = null;
+    let initialCam = null;
+    const hotspotRefs = {}; // key → { worldPos: Vector3, dom: HTMLElement }
+    const raycaster = new THREE.Raycaster();
+    let lastBehindCheck = 0;
+    const _v = new THREE.Vector3();
+    const _fwd = new THREE.Vector3();
+    const _toPt = new THREE.Vector3();
+    const _dir = new THREE.Vector3();
+
+    function init3D() {
+      const container = document.getElementById("model3d-container");
+      const canvas    = document.getElementById("model3d-canvas");
+      if (!container || !canvas) return;
+
+      const w = Math.max(container.clientWidth, 1);
+      const h = Math.max(container.clientHeight, 1);
+
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(35, w / h, 0.01, 1000);
+      camera.position.set(0, 1, 5);
+
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setSize(w, h, false);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+      // Beleuchtung: warmes Key-Light + neutrales Fill + Rim für Kanten
+      scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+      const key  = new THREE.DirectionalLight(0xfff4e0, 1.0);
+      key.position.set(3, 4, 5);
+      scene.add(key);
+      const fill = new THREE.DirectionalLight(0xe8f0ff, 0.45);
+      fill.position.set(-4, -1, -3);
+      scene.add(fill);
+      const rim  = new THREE.DirectionalLight(0xffffff, 0.35);
+      rim.position.set(0, 6, -4);
+      scene.add(rim);
+
+      // OrbitControls: nur Rotate + Pinch-Zoom, kein Pan
+      controls = new OrbitControls(camera, canvas);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.08;
+      controls.enablePan     = false;
+      controls.minDistance   = 0.5;
+      controls.maxDistance   = 50;
+      controls.rotateSpeed   = 0.9;
+      controls.zoomSpeed     = 0.6;
+
+      // Hotspot-DOM-Referenzen cachen
+      document.querySelectorAll(".hotspot-3d").forEach(el => {
+        hotspotRefs[el.dataset.key] = { worldPos: null, dom: el };
+      });
+
+      // GLB laden
+      const loader = new GLTFLoader();
+      loader.load(
+        "walschaerts_valve_gear.glb",
+        (gltf) => {
+          const model = gltf.scene;
+          modelRoot = model;
+
+          // Modell auf Ursprung zentrieren
+          const box    = new THREE.Box3().setFromObject(model);
+          const center = box.getCenter(new THREE.Vector3());
+          const size   = box.getSize(new THREE.Vector3());
+          model.position.sub(center);
+
+          scene.add(model);
+
+          // Kamera passend platzieren
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const fitDist = (maxDim / (2 * Math.tan(Math.PI * camera.fov / 360))) * 1.55;
+          camera.position.set(fitDist * 0.55, fitDist * 0.35, fitDist);
+          controls.target.set(0, 0, 0);
+          controls.update();
+          initialCam = {
+            pos:    camera.position.clone(),
+            target: controls.target.clone()
+          };
+
+          // Welt-Positionen der zugeordneten Nodes finden
+          for (const [hsKey, nodeName] of Object.entries(HOTSPOT_NODE_MAP)) {
+            let nodeObj = null;
+            model.traverse(o => {
+              if (!nodeObj && o.name === nodeName) nodeObj = o;
+            });
+            if (nodeObj && hotspotRefs[hsKey]) {
+              const nb = new THREE.Box3().setFromObject(nodeObj);
+              let wp;
+              if (!nb.isEmpty()) {
+                wp = nb.getCenter(new THREE.Vector3());
+              } else {
+                wp = new THREE.Vector3();
+                nodeObj.getWorldPosition(wp);
+              }
+              const o = HOTSPOT_OFFSET[hsKey] || [0,0,0];
+              wp.add(new THREE.Vector3(o[0], o[1], o[2]));
+              hotspotRefs[hsKey].worldPos = wp;
+              console.info(`[3D] hotspot "${hsKey}" → node "${nodeName}" @ (${wp.x.toFixed(2)}, ${wp.y.toFixed(2)}, ${wp.z.toFixed(2)})`);
+            } else {
+              console.warn(`[3D] Node nicht gefunden für "${hsKey}" → "${nodeName}"`);
+            }
+          }
+
+          // Loader ausblenden
+          const loaderEl = document.getElementById("model3d-loader");
+          if (loaderEl) {
+            loaderEl.classList.add("is-fading");
+            setTimeout(() => { loaderEl.hidden = true; }, 320);
+          }
+        },
+        undefined,
+        (err) => {
+          console.error("[3D] GLB konnte nicht geladen werden:", err);
+          const loaderEl = document.getElementById("model3d-loader");
+          if (loaderEl) loaderEl.hidden = true;
+          const errEl = document.createElement("div");
+          errEl.className = "model3d__error";
+          errEl.innerHTML = `Das 3D-Modell konnte nicht geladen werden.<small>Datei <code>walschaerts_valve_gear.glb</code> wird im selben Ordner erwartet. Wenn die Seite lokal per <code>file://</code> geöffnet wurde, lokalen Webserver verwenden.</small>`;
+          container.appendChild(errEl);
+        }
+      );
+
+      // Resize
+      const ro = new ResizeObserver(() => {
+        const w = Math.max(container.clientWidth, 1);
+        const h = Math.max(container.clientHeight, 1);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h, false);
+      });
+      ro.observe(container);
+
+      // Reset-View-Button
+      const resetBtn = document.getElementById("model3d-reset");
+      if (resetBtn) {
+        resetBtn.addEventListener("click", () => {
+          if (!initialCam) return;
+          const sPos = camera.position.clone();
+          const sTgt = controls.target.clone();
+          const ePos = initialCam.pos.clone();
+          const eTgt = initialCam.target.clone();
+          const t0   = performance.now();
+          const dur  = 480;
+          function step() {
+            const t = Math.min(1, (performance.now() - t0) / dur);
+            // easeInOutQuad
+            const e = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+            camera.position.lerpVectors(sPos, ePos, e);
+            controls.target.lerpVectors(sTgt, eTgt, e);
+            controls.update();
+            if (t < 1) requestAnimationFrame(step);
+          }
+          step();
+        });
+      }
+
+      // Render-Loop
+      function animate() {
+        requestAnimationFrame(animate);
+        if (controls) controls.update();
+        if (renderer && scene && camera) renderer.render(scene, camera);
+        updateHotspotProjections(performance.now());
+      }
+      animate();
+    }
+
+    function updateHotspotProjections(now) {
+      const container = document.getElementById("model3d-container");
+      if (!container) return;
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      if (!w || !h) return;
+
+      camera.getWorldDirection(_fwd);
+
+      // Behind-Check via Raycast — gedrosselt auf ~12 Hz, weil teuer
+      const doBehindCheck = modelRoot && (now - lastBehindCheck > 80);
+      if (doBehindCheck) lastBehindCheck = now;
+
+      for (const k in hotspotRefs) {
+        const hs = hotspotRefs[k];
+        if (!hs.worldPos || !hs.dom) continue;
+
+        _v.copy(hs.worldPos);
+
+        // Distanz entlang der Kamera-Blickrichtung (positiv = vor Kamera)
+        _toPt.copy(_v).sub(camera.position);
+        const distFwd = _toPt.dot(_fwd);
+
+        // In NDC projizieren (mutiert _v)
+        _v.project(camera);
+        const x = ( _v.x + 1) * 0.5 * w;
+        const y = (-_v.y + 1) * 0.5 * h;
+
+        // Außerhalb View-Frustum?
+        const offscreen = distFwd <= 0
+                       || _v.x < -1 || _v.x > 1
+                       || _v.y < -1 || _v.y > 1;
+
+        hs.dom.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%)`;
+
+        if (offscreen) {
+          hs.dom.style.opacity      = "0";
+          hs.dom.style.pointerEvents = "none";
+          hs.dom.classList.remove("behind");
+        } else {
+          hs.dom.style.opacity      = "";
+          hs.dom.style.pointerEvents = "";
+
+          // Behind-Check via Raycast: feuert ein Strahl von Kamera Richtung Hotspot.
+          // Wenn das Modell den Strahl signifikant vor dem Hotspot trifft → behind.
+          if (doBehindCheck) {
+            _dir.copy(hs.worldPos).sub(camera.position);
+            const distToHs = _dir.length();
+            _dir.normalize();
+            raycaster.set(camera.position, _dir);
+            raycaster.far = distToHs + 0.001;
+            const hits = raycaster.intersectObject(modelRoot, true);
+            // Toleranz: Treffer muss merklich vor dem Hotspot sein
+            const isBehind = hits.length > 0 && hits[0].distance < distToHs - 0.15;
+            hs.dom.classList.toggle("behind", isBehind);
+          }
+        }
+      }
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init3D);
+    } else {
+      init3D();
+    }
+  </script>
+</body>
+</html>
