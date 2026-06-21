@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#A31A1B" />
-  <title>Heusinger-Steuerung · Furka-Dampfbahn</title>
+  <title>Heusinger-Steuerung - M322</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://unpkg.com" crossorigin />
@@ -19,23 +19,15 @@
   }
   </script>
   <style>
-    /* ===========================================================
-       Furka-Dampfbahn — CD Manual V1.6 Tokens
-       =========================================================== */
     :root {
-      /* Primärfarben */
       --furka-rot:     #A31A1B;
       --furka-blau:    #143A84;
       --furka-gruen:   #124E33;
       --furka-gold:    #FEC905;
-
-      /* Sekundärfarben */
       --gletscher:     #C2C9D4;
       --geroell:       #D9D5B8;
       --granit:        #BC9D97;
       --salbei:        #D3DAA9;
-
-      /* Neutrals */
       --schwarz:       #1a1a1a;
       --weiss:         #ffffff;
       --paper:         #fbfaf6;
@@ -46,11 +38,9 @@
       --grau-500:      #6f6a5d;
       --grau-700:      #3a382f;
 
-      /* Schrift */
       --font-display:  'Oswald', 'DIN Condensed', 'Arial Narrow', sans-serif;
       --font-body:     'Lora', 'Kepler Std', Georgia, 'Times New Roman', serif;
 
-      /* Spacing */
       --s-1: 4px;
       --s-2: 8px;
       --s-3: 12px;
@@ -59,14 +49,11 @@
       --s-6: 24px;
       --s-7: 32px;
       --s-8: 48px;
-
-      /* Radii (klein, gemäss CD V1.6) */
       --r-sm: 4px;
       --r-md: 6px;
       --r-lg: 8px;
       --r-pill: 999px;
 
-      /* Layout */
       --frame-radius: 36px;
       --nav-height: 56px;
       --tabbar-height: 60px;
@@ -95,9 +82,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ===========================================================
-       Phone-Frame (nur Desktop)
-       =========================================================== */
     .phone-frame {
       width: 100%;
       max-width: 414px;
@@ -123,7 +107,6 @@
       min-height: 0;
     }
 
-    /* Mobile: kein Rahmen, voll Bildschirm */
     @media (max-width: 480px) {
       body { padding: 0; background: var(--paper); }
       .phone-frame {
@@ -136,9 +119,6 @@
       }
     }
 
-    /* ===========================================================
-       Screens
-       =========================================================== */
     .screen {
       flex: 1 1 auto;
       overflow-y: auto;
@@ -149,9 +129,6 @@
     }
     .screen[hidden] { display: none; }
 
-    /* ===========================================================
-       Top-Nav (Modell/Info/Detail)
-       =========================================================== */
     .topnav {
       flex: none;
       height: var(--nav-height);
@@ -208,9 +185,6 @@
       font-weight: 500;
     }
 
-    /* ===========================================================
-       Sprachumschalter
-       =========================================================== */
     .lang-toggle {
       display: inline-flex;
       background: var(--grau-100);
@@ -240,9 +214,6 @@
       color: var(--weiss);
     }
 
-    /* ===========================================================
-       Start-Screen
-       =========================================================== */
     .screen-start {
       padding: 0;
       background:
@@ -383,9 +354,6 @@
       font-style: italic;
     }
 
-    /* ===========================================================
-       Modell-Screen — Schematische Darstellung
-       =========================================================== */
     .screen-model {
       background: var(--paper);
     }
@@ -434,9 +402,6 @@
       padding: 0 var(--s-4) var(--s-4);
     }
 
-    /* ===========================================================
-       3D-Modell Viewer
-       =========================================================== */
     .model3d {
       position: relative;
       width: 100%;
@@ -538,7 +503,6 @@
       font-size: 11px;
     }
 
-    /* HTML-Hotspots, projiziert über das 3D-Modell */
     .model3d__canvas { position: relative; z-index: 0; }
     .model3d__hotspots { z-index: 2; }
     .model3d__controls { z-index: 4; }
@@ -670,9 +634,6 @@
       box-shadow: 0 0 0 1px var(--furka-rot);
     }
 
-    /* ===========================================================
-       Detail-Screen
-       =========================================================== */
     .screen-detail {
       background: var(--paper);
     }
@@ -838,9 +799,6 @@
     }
     .btn-mark[aria-pressed="true"]:hover { background: var(--grau-100); }
 
-    /* ===========================================================
-       Info-Screen
-       =========================================================== */
     .screen-info {
       background: var(--paper);
     }
@@ -939,9 +897,7 @@
       margin-bottom: var(--s-2);
     }
 
-    /* ===========================================================
-       Tab-Bar
-       =========================================================== */
+
     .tabbar {
       flex: none;
       height: var(--tabbar-height);
@@ -975,9 +931,6 @@
     }
     .tab:focus-visible { outline: 2px solid var(--furka-blau); outline-offset: -4px; }
 
-    /* ===========================================================
-       Hilfe-Overlay
-       =========================================================== */
     .help-overlay {
       position: absolute;
       inset: 0;
@@ -1051,9 +1004,6 @@
       to   { opacity: 1; transform: none; }
     }
 
-    /* ===========================================================
-       Toast
-       =========================================================== */
     .toast-container {
       position: absolute;
       bottom: calc(var(--tabbar-height) + var(--s-4));
@@ -1092,9 +1042,6 @@
       to { opacity: 0; transform: translateY(-4px); }
     }
 
-    /* ===========================================================
-       Reduced motion
-       =========================================================== */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
@@ -1104,7 +1051,6 @@
       .hotspot .pulse { display: none; }
     }
 
-    /* Utility */
     .visually-hidden {
       position: absolute;
       width: 1px;
@@ -1122,9 +1068,6 @@
   <div class="phone-frame" role="application" aria-label="Heusinger-Steuerung interaktiv">
     <div class="app">
 
-      <!-- =======================================================
-           Start-Screen
-           ======================================================= -->
       <section class="screen screen-start" data-screen="start" aria-labelledby="start-title">
         <header class="start__header">
           <div class="start__wordmark" aria-label="Furka-Dampfbahn Bergstrecke">
@@ -1166,9 +1109,6 @@
         </footer>
       </section>
 
-      <!-- =======================================================
-           Modell-Screen
-           ======================================================= -->
       <section class="screen screen-model" data-screen="model" aria-labelledby="model-title" hidden>
         <header class="topnav">
           <div class="topnav__left">
@@ -1256,9 +1196,6 @@
         </div>
       </section>
 
-      <!-- =======================================================
-           Detail-Screen (dynamisch befüllt)
-           ======================================================= -->
       <section class="screen screen-detail" data-screen="detail" aria-labelledby="detail-name" hidden>
         <header class="topnav">
           <div class="topnav__left">
@@ -1307,9 +1244,6 @@
         </div>
       </section>
 
-      <!-- =======================================================
-           Info-Screen
-           ======================================================= -->
       <section class="screen screen-info" data-screen="info" aria-labelledby="info-title" hidden>
         <header class="topnav">
           <div class="topnav__left">
@@ -1394,9 +1328,6 @@
         </div>
       </section>
 
-      <!-- =======================================================
-           Tab-Bar (nur auf Modell + Info sichtbar)
-           ======================================================= -->
       <nav class="tabbar" id="tabbar" role="tablist" aria-label="Hauptnavigation" hidden>
         <button type="button" class="tab" role="tab" data-tab="model" aria-selected="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -1416,9 +1347,6 @@
         </button>
       </nav>
 
-      <!-- =======================================================
-           Hilfe-Overlay
-           ======================================================= -->
       <div class="help-overlay" id="help-overlay" role="dialog" aria-labelledby="help-title" aria-modal="true" hidden>
         <div class="help-card">
           <div class="help-card__icon">
@@ -1434,18 +1362,13 @@
         </div>
       </div>
 
-      <!-- =======================================================
-           Toast-Container
-           ======================================================= -->
       <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="false"></div>
 
     </div>
   </div>
 
   <script>
-    // =============================================================
-    //  Daten — Bauteile (DE komplett, FR nur Name + Leitsatz)
-    // =============================================================
+
     const COMPONENTS = {
       gegenkurbel: {
         number: 1,
@@ -1530,10 +1453,6 @@
     };
 
     const ORDER = ["gegenkurbel", "schwinge", "voreilhebel", "kreuzkopf", "schieber"];
-
-    // =============================================================
-    //  Mini-i18n
-    // =============================================================
     const I18N = {
       de: {
         "start.wordmarkSub": "Bergstrecke",
@@ -1654,9 +1573,6 @@
       }
     };
 
-    // =============================================================
-    //  Bauteil-Illustrationen (eigene SVG je Detail)
-    // =============================================================
     const ILLUSTRATIONS = {
       gegenkurbel: `
         <svg viewBox="0 0 220 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -1776,9 +1692,6 @@
         </svg>`
     };
 
-    // =============================================================
-    //  State (rein in-memory — passt zum Festival-Use-Case)
-    // =============================================================
     const state = {
       lang: "de",
       currentScreen: "start",
@@ -1787,9 +1700,6 @@
       helpShownThisSession: false
     };
 
-    // =============================================================
-    //  Hilfsfunktionen
-    // =============================================================
     function t(key) {
       return I18N[state.lang][key] ?? I18N.de[key] ?? null;
     }
@@ -1800,13 +1710,13 @@
         const val = t(key);
         if (val !== null && val !== "") el.textContent = val;
       });
-      // Sprache am <html> setzen
+
       document.documentElement.setAttribute("lang", state.lang);
-      // Sprachumschalter synchronisieren
+
       document.querySelectorAll(".lang-toggle button").forEach(btn => {
         btn.setAttribute("aria-pressed", String(btn.dataset.lang === state.lang));
       });
-      // Hinweis: FR / EN → langer Body bleibt DE → Banner einblenden
+
       const notice = document.getElementById("info-translation-notice");
       if (notice) {
         notice.classList.toggle("visible", state.lang === "fr" || state.lang === "en");
@@ -1820,7 +1730,6 @@
       });
       state.currentScreen = name;
 
-      // Tab-Bar nur auf model/info zeigen
       const tabbar = document.getElementById("tabbar");
       const showTabbar = (name === "model" || name === "info");
       tabbar.hidden = !showTabbar;
@@ -1830,11 +1739,9 @@
         });
       }
 
-      // Scroll-Reset bei Screen-Wechsel
       const screen = document.querySelector(`.screen[data-screen="${name}"]`);
       if (screen) screen.scrollTop = 0;
 
-      // Beim ersten Aufruf von "model" zeigen wir das Hilfe-Overlay
       if (name === "model" && !state.helpShownThisSession) {
         setTimeout(showHelp, 280);
       }
@@ -1847,7 +1754,6 @@
       const pill = document.getElementById("progress-pill");
       pill.classList.toggle("complete", n === 5);
 
-      // Hotspot-Marker auf "discovered" stellen (3D-Variante)
       document.querySelectorAll(".hotspot-3d").forEach(h => {
         const key = h.dataset.key;
         h.classList.toggle("discovered", state.discovered.has(key));
@@ -1866,7 +1772,6 @@
       document.getElementById("detail-kurz").textContent = c.kurz;
       document.getElementById("detail-tech").textContent = c.tech;
 
-      // Facts
       const facts = document.getElementById("detail-facts");
       facts.innerHTML = "";
       c.facts.forEach(f => {
@@ -1879,11 +1784,9 @@
         facts.appendChild(row);
       });
 
-      // Illustration
       const ill = document.getElementById("detail-illustration");
       ill.innerHTML = ILLUSTRATIONS[key] ?? "";
 
-      // Mark-Button-Zustand
       const btn = document.getElementById("btn-mark");
       const txt = document.getElementById("btn-mark-text");
       if (state.discovered.has(key)) {
@@ -1902,16 +1805,13 @@
       state.discovered.add(key);
       updateProgress();
 
-      // Button-Zustand
       const btn = document.getElementById("btn-mark");
       const txt = document.getElementById("btn-mark-text");
       btn.setAttribute("aria-pressed", "true");
       txt.textContent = t("detail.marked");
 
-      // Toast
       showToast(t("detail.toast"), "success");
 
-      // Bei kompletter Erkundung: Sondertoast
       if (state.discovered.size === 5) {
         setTimeout(() => {
           let msg;
@@ -1944,7 +1844,6 @@
       if (!I18N[lang]) return;
       state.lang = lang;
       applyTranslations();
-      // Falls Detail offen ist, neu rendern (für name/lead)
       if (state.currentScreen === "detail" && state.currentDetail) {
         const c = COMPONENTS[state.currentDetail];
         document.getElementById("detail-name").textContent = c.name[lang] ?? c.name.de;
@@ -1955,23 +1854,17 @@
       updateProgress();
     }
 
-    // =============================================================
-    //  Event-Binding
-    // =============================================================
     document.addEventListener("DOMContentLoaded", () => {
       applyTranslations();
       updateProgress();
 
-      // Start-CTAs
       document.getElementById("cta-start").addEventListener("click", () => showScreen("model"));
       document.getElementById("cta-info").addEventListener("click", () => showScreen("info"));
 
-      // Sprache (alle Toggles am Dokument)
       document.querySelectorAll(".lang-toggle button").forEach(btn => {
         btn.addEventListener("click", () => setLang(btn.dataset.lang));
       });
 
-      // Hotspots (Klick + Tastatur) — 3D-Variante
       document.querySelectorAll(".hotspot-3d").forEach(h => {
         const key = h.dataset.key;
         h.addEventListener("click", () => openDetail(key));
@@ -1983,12 +1876,10 @@
         });
       });
 
-      // Tab-Bar
       document.querySelectorAll(".tab").forEach(tab => {
         tab.addEventListener("click", () => showScreen(tab.dataset.tab));
       });
 
-      // Aktions-Buttons im Top-Nav
       document.querySelectorAll("[data-action]").forEach(btn => {
         const action = btn.dataset.action;
         btn.addEventListener("click", () => {
@@ -1998,18 +1889,15 @@
         });
       });
 
-      // Hilfe-Overlay schliessen
       document.getElementById("help-dismiss").addEventListener("click", hideHelp);
       document.getElementById("help-overlay").addEventListener("click", e => {
         if (e.target.id === "help-overlay") hideHelp();
       });
 
-      // Markieren-Button
       document.getElementById("btn-mark").addEventListener("click", () => {
         if (state.currentDetail) markDiscovered(state.currentDetail);
       });
 
-      // Escape schliesst Overlay/Detail
       document.addEventListener("keydown", e => {
         if (e.key !== "Escape") return;
         if (!document.getElementById("help-overlay").hidden) {
@@ -2022,48 +1910,26 @@
   </script>
 
   <script type="module">
-    // =============================================================
-    //  3D-Modell (Three.js + GLTFLoader + OrbitControls)
-    //  Lädt das GLB "walschaerts_valve_gear.glb" aus dem gleichen
-    //  Verzeichnis. Hotspots sind HTML-Elemente, die jeden Frame
-    //  auf die 3D-Position der zugeordneten Modell-Node projiziert
-    //  werden — sie drehen sich mit dem Modell mit.
-    // =============================================================
     import * as THREE from "three";
     import { GLTFLoader }    from "three/addons/loaders/GLTFLoader.js";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-    // Welcher Hotspot zeigt auf welche Node im GLB.
-    // Falls eine Node visuell an der falschen Stelle landet, setze stattdessen
-    // unten in HOTSPOT_REL_POS eine direkte Position relativ zur Modell-Größe.
     const HOTSPOT_NODE_MAP = {
-      gegenkurbel: "Eccentric_Rod_24",   // Excenterstange (führt zur Gegenkurbel am Rad)
-      schwinge:    "Expansion_Link_26",  // Schwinge
-      voreilhebel: "Rod3_29",            // Combination Lever = Voreilhebel
-      kreuzkopf:   "Pistons_15",         // Kreuzkopf-/Kolbengruppe
-      schieber:    "Piston valves_35"    // Schieber (piston valve)
+      gegenkurbel: "Eccentric_Rod_24",
+      schwinge:    "Expansion_Link_26",
+      voreilhebel: "Rod3_29",
+      kreuzkopf:   "Pistons_15",
+      schieber:    "Piston valves_35"
     };
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  HIER DIE HOTSPOT-POSITIONEN ÄNDERN
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // Direkte Position relativ zur Modell-Bounding-Box. Wenn gesetzt,
-    // wird die Node-Position oben überschrieben.
-    //
-    //   x: +rechts / -links     (Spannweite ungefähr -0.5 bis +0.5)
-    //   y: +oben   / -unten
-    //   z: +vorn   / -hinten
-    //
-    // Justiere in Schritten von 0.05. Auf null setzen = nutze die Node.
     const HOTSPOT_REL_POS = {
-      gegenkurbel: { x: +0.18, y: -0.10, z: +0.20 },   // rechts am Treibrad
+      gegenkurbel: { x: +0.18, y: -0.10, z: +0.20 },
       schwinge:    null,
-      voreilhebel: { x: -0.30, y: +0.00, z: +0.30 },   // links der Mitte, mittlere Höhe
+      voreilhebel: { x: -0.30, y: +0.00, z: +0.30 },
       kreuzkopf:   null,
-      schieber:    { x: -0.40, y: +0.20, z: +0.30 }    // links oben über Zylinder
+      schieber:    { x: -0.40, y: +0.20, z: +0.30 }
     };
 
-    // Manuelle Mikro-Offsets (in Welt-Einheiten), zusätzlich zur Position.
     const HOTSPOT_OFFSET = {
       gegenkurbel: [0, 0, 0],
       schwinge:    [0, 0, 0],
@@ -2075,7 +1941,7 @@
     let scene, camera, renderer, controls;
     let modelRoot = null;
     let initialCam = null;
-    const hotspotRefs = {}; // key → { worldPos: Vector3, dom: HTMLElement }
+    const hotspotRefs = {};
     const raycaster = new THREE.Raycaster();
     let lastBehindCheck = 0;
     const _v = new THREE.Vector3();
@@ -2101,7 +1967,6 @@
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-      // Beleuchtung: warmes Key-Light + neutrales Fill + Rim für Kanten
       scene.add(new THREE.AmbientLight(0xffffff, 0.65));
       const key  = new THREE.DirectionalLight(0xfff4e0, 1.0);
       key.position.set(3, 4, 5);
@@ -2113,7 +1978,6 @@
       rim.position.set(0, 6, -4);
       scene.add(rim);
 
-      // OrbitControls: nur Rotate + Pinch-Zoom, kein Pan
       controls = new OrbitControls(camera, canvas);
       controls.enableDamping = true;
       controls.dampingFactor = 0.08;
@@ -2123,12 +1987,10 @@
       controls.rotateSpeed   = 0.9;
       controls.zoomSpeed     = 0.6;
 
-      // Hotspot-DOM-Referenzen cachen
       document.querySelectorAll(".hotspot-3d").forEach(el => {
         hotspotRefs[el.dataset.key] = { worldPos: null, dom: el };
       });
 
-      // GLB laden
       const loader = new GLTFLoader();
       loader.load(
         "walschaerts_valve_gear.glb",
@@ -2136,7 +1998,6 @@
           const model = gltf.scene;
           modelRoot = model;
 
-          // Modell auf Ursprung zentrieren
           const box    = new THREE.Box3().setFromObject(model);
           const center = box.getCenter(new THREE.Vector3());
           const size   = box.getSize(new THREE.Vector3());
@@ -2144,11 +2005,8 @@
 
           scene.add(model);
 
-          // WICHTIG: matrixWorld aller Children aktualisieren, sonst liefert
-          // Box3.setFromObject auf Sub-Nodes potenziell falsche Positionen.
           model.updateMatrixWorld(true);
 
-          // Kamera passend platzieren
           const maxDim = Math.max(size.x, size.y, size.z);
           const fitDist = (maxDim / (2 * Math.tan(Math.PI * camera.fov / 360))) * 1.55;
           camera.position.set(fitDist * 0.55, fitDist * 0.35, fitDist);
@@ -2159,8 +2017,6 @@
             target: controls.target.clone()
           };
 
-          // Welt-Positionen der Hotspots bestimmen: erst HOTSPOT_REL_POS prüfen
-          // (= direkte Position relativ zur Modell-Größe), sonst Node-Lookup.
           for (const [hsKey, nodeName] of Object.entries(HOTSPOT_NODE_MAP)) {
             if (!hotspotRefs[hsKey]) continue;
             let wp = null;
@@ -2170,8 +2026,6 @@
               wp = new THREE.Vector3(rel.x * size.x, rel.y * size.y, rel.z * size.z);
               console.info(`[3D] hotspot "${hsKey}" → rel-pos x=${rel.x} y=${rel.y} z=${rel.z} → world (${wp.x.toFixed(2)}, ${wp.y.toFixed(2)}, ${wp.z.toFixed(2)})`);
             } else if (nodeName) {
-              // Three.js sanitiert Node-Namen: Leerzeichen werden zu Underscores.
-              // Deshalb beide Varianten probieren.
               const sanitized = nodeName.replace(/\s/g, "_");
               let nodeObj = null;
               model.traverse(o => {
@@ -2198,7 +2052,6 @@
             }
           }
 
-          // Loader ausblenden
           const loaderEl = document.getElementById("model3d-loader");
           if (loaderEl) {
             loaderEl.classList.add("is-fading");
@@ -2217,7 +2070,6 @@
         }
       );
 
-      // Resize
       const ro = new ResizeObserver(() => {
         const w = Math.max(container.clientWidth, 1);
         const h = Math.max(container.clientHeight, 1);
@@ -2227,7 +2079,6 @@
       });
       ro.observe(container);
 
-      // Reset-View-Button
       const resetBtn = document.getElementById("model3d-reset");
       if (resetBtn) {
         resetBtn.addEventListener("click", () => {
@@ -2240,7 +2091,6 @@
           const dur  = 480;
           function step() {
             const t = Math.min(1, (performance.now() - t0) / dur);
-            // easeInOutQuad
             const e = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
             camera.position.lerpVectors(sPos, ePos, e);
             controls.target.lerpVectors(sTgt, eTgt, e);
@@ -2251,7 +2101,6 @@
         });
       }
 
-      // Render-Loop
       function animate() {
         requestAnimationFrame(animate);
         if (controls) controls.update();
@@ -2270,7 +2119,6 @@
 
       camera.getWorldDirection(_fwd);
 
-      // Behind-Check via Raycast — gedrosselt auf ~12 Hz, weil teuer
       const doBehindCheck = modelRoot && (now - lastBehindCheck > 80);
       if (doBehindCheck) lastBehindCheck = now;
 
@@ -2280,16 +2128,13 @@
 
         _v.copy(hs.worldPos);
 
-        // Distanz entlang der Kamera-Blickrichtung (positiv = vor Kamera)
         _toPt.copy(_v).sub(camera.position);
         const distFwd = _toPt.dot(_fwd);
 
-        // In NDC projizieren (mutiert _v)
         _v.project(camera);
         const x = ( _v.x + 1) * 0.5 * w;
         const y = (-_v.y + 1) * 0.5 * h;
 
-        // Außerhalb View-Frustum?
         const offscreen = distFwd <= 0
                        || _v.x < -1 || _v.x > 1
                        || _v.y < -1 || _v.y > 1;
@@ -2304,8 +2149,6 @@
           hs.dom.style.opacity      = "";
           hs.dom.style.pointerEvents = "";
 
-          // Behind-Check via Raycast: feuert ein Strahl von Kamera Richtung Hotspot.
-          // Wenn das Modell den Strahl signifikant vor dem Hotspot trifft → behind.
           if (doBehindCheck) {
             _dir.copy(hs.worldPos).sub(camera.position);
             const distToHs = _dir.length();
@@ -2313,7 +2156,6 @@
             raycaster.set(camera.position, _dir);
             raycaster.far = distToHs + 0.001;
             const hits = raycaster.intersectObject(modelRoot, true);
-            // Toleranz: Treffer muss merklich vor dem Hotspot sein
             const isBehind = hits.length > 0 && hits[0].distance < distToHs - 0.15;
             hs.dom.classList.toggle("behind", isBehind);
           }
