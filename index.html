@@ -160,6 +160,12 @@
       min-width: 64px;
     }
     .topnav__right { justify-content: flex-end; }
+    /* Wenn ein Lang-Toggle drin sitzt, braucht es etwas mehr Platz */
+    .topnav__right:has(.lang-toggle) { min-width: 0; gap: 6px; }
+    .topnav__title:has(+ .topnav__right .lang-toggle),
+    .topnav:has(.topnav__right .lang-toggle) .topnav__title {
+      padding: 0 var(--s-2);
+    }
 
     .icon-btn {
       background: transparent;
@@ -212,6 +218,15 @@
     .lang-toggle button[aria-pressed="true"] {
       background: var(--schwarz);
       color: var(--weiss);
+    }
+    /* Kompakte Variante für die Topnav (Modell- und Detail-Screen) */
+    .lang-toggle--compact {
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+    .lang-toggle--compact button {
+      padding: 4px 7px;
+      min-width: 26px;
     }
 
     .screen-start {
@@ -606,32 +621,73 @@
     .schematic-legend {
       padding: var(--s-3) var(--s-5) var(--s-6);
       display: flex;
-      flex-wrap: wrap;
-      gap: var(--s-2) var(--s-4);
+      flex-direction: column;
+      gap: var(--s-2);
       font-family: var(--font-display);
-      font-size: 11px;
+      font-size: 12px;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: var(--grau-500);
+      color: var(--schwarz);
     }
     .schematic-legend__item {
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 10px;
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--paper);
+      border: 1px solid var(--grau-200);
+      border-radius: var(--r-md);
+      font-family: inherit;
+      font-size: inherit;
+      letter-spacing: inherit;
+      text-transform: inherit;
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
+    }
+    .schematic-legend__item:hover {
+      background: var(--grau-50);
+      border-color: var(--grau-300);
+    }
+    .schematic-legend__item:active { transform: translateY(1px); }
+    .schematic-legend__item:focus-visible {
+      outline: 2px solid var(--furka-blau);
+      outline-offset: 2px;
+    }
+    .schematic-legend__item.is-discovered {
+      background: rgba(18, 78, 51, 0.06);
+      border-color: rgba(18, 78, 51, 0.25);
     }
     .schematic-legend__dot {
-      width: 16px;
-      height: 16px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       background: var(--furka-rot);
       color: var(--weiss);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 600;
-      border: 1.5px solid var(--weiss);
-      box-shadow: 0 0 0 1px var(--furka-rot);
+      flex: none;
+    }
+    .schematic-legend__item.is-discovered .schematic-legend__dot {
+      background: var(--furka-gruen);
+    }
+    .schematic-legend__check {
+      margin-left: auto;
+      color: var(--furka-gruen);
+      font-size: 14px;
+      font-weight: 700;
+      opacity: 0;
+      transform: scale(0.6);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+    .schematic-legend__item.is-discovered .schematic-legend__check {
+      opacity: 1;
+      transform: scale(1);
     }
 
     .screen-detail {
@@ -773,29 +829,44 @@
     }
     .btn-mark {
       width: 100%;
-      padding: 14px;
+      padding: 16px;
       background: var(--furka-gruen);
       color: var(--weiss);
       border: 0;
       border-radius: var(--r-md);
       font-family: var(--font-display);
-      font-weight: 500;
-      font-size: 14px;
+      font-weight: 600;
+      font-size: 15px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       cursor: pointer;
-      transition: background 150ms ease;
+      transition: background 150ms ease, transform 100ms ease, box-shadow 200ms ease;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12), 0 4px 12px rgba(18, 78, 51, 0.25);
+      position: relative;
     }
     .btn-mark:hover { background: #0d3e28; }
+    .btn-mark:active { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0,0,0,0.12), 0 2px 6px rgba(18,78,51,0.2); }
     .btn-mark:focus-visible { outline: 2px solid var(--furka-blau); outline-offset: 2px; }
+    /* Sanfter Pulse, der nach 4s einsetzt, wenn der Button noch nicht gedrückt wurde */
+    .btn-mark:not([aria-pressed="true"]) {
+      animation: btnMarkPulse 2.2s ease-in-out 4s 3;
+    }
+    @keyframes btnMarkPulse {
+      0%, 100% { box-shadow: 0 2px 0 rgba(0,0,0,0.12), 0 4px 12px rgba(18, 78, 51, 0.25); }
+      50%      { box-shadow: 0 2px 0 rgba(0,0,0,0.12), 0 4px 12px rgba(18, 78, 51, 0.25), 0 0 0 6px rgba(18, 78, 51, 0.18); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .btn-mark:not([aria-pressed="true"]) { animation: none; }
+    }
     .btn-mark[aria-pressed="true"] {
       background: var(--grau-100);
       color: var(--furka-gruen);
       cursor: default;
+      box-shadow: none;
     }
     .btn-mark[aria-pressed="true"]:hover { background: var(--grau-100); }
 
@@ -1120,6 +1191,11 @@
           </div>
           <h2 class="topnav__title" id="model-title" data-i18n="model.title">Modell</h2>
           <div class="topnav__right">
+            <div class="lang-toggle lang-toggle--compact" role="group" aria-label="Sprache wählen">
+              <button type="button" data-lang="de" aria-pressed="true">DE</button>
+              <button type="button" data-lang="fr" aria-pressed="false">FR</button>
+              <button type="button" data-lang="en" aria-pressed="false">EN</button>
+            </div>
             <button type="button" class="icon-btn" data-action="show-help" aria-label="Hilfe anzeigen">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/>
@@ -1138,7 +1214,7 @@
             </span>
           </div>
           <p class="model__hint" data-i18n="model.hint">
-            Tippe auf die nummerierten roten Punkte, um die Bauteile zu erkunden.
+            Drehe das 3D-Modell mit dem Finger und tippe auf einen roten Punkt — oder wähle ein Bauteil aus der Liste unten.
           </p>
         </div>
 
@@ -1186,12 +1262,32 @@
             </div>
           </div>
 
-          <div class="schematic-legend" aria-hidden="true">
-            <span class="schematic-legend__item"><span class="schematic-legend__dot">1</span><span data-i18n="comp.gegenkurbel.name">Gegenkurbel</span></span>
-            <span class="schematic-legend__item"><span class="schematic-legend__dot">2</span><span data-i18n="comp.schwinge.name">Schwinge</span></span>
-            <span class="schematic-legend__item"><span class="schematic-legend__dot">3</span><span data-i18n="comp.voreilhebel.name">Voreilhebel</span></span>
-            <span class="schematic-legend__item"><span class="schematic-legend__dot">4</span><span data-i18n="comp.kreuzkopf.name">Kreuzkopf</span></span>
-            <span class="schematic-legend__item"><span class="schematic-legend__dot">5</span><span data-i18n="comp.schieber.name">Schieber</span></span>
+          <div class="schematic-legend" role="list">
+            <button type="button" class="schematic-legend__item" role="listitem" data-key="gegenkurbel" data-hotspot="1" aria-label="Bauteil 1 öffnen: Gegenkurbel">
+              <span class="schematic-legend__dot">1</span>
+              <span data-i18n="comp.gegenkurbel.name">Gegenkurbel</span>
+              <span class="schematic-legend__check" aria-hidden="true">✓</span>
+            </button>
+            <button type="button" class="schematic-legend__item" role="listitem" data-key="schwinge" data-hotspot="2" aria-label="Bauteil 2 öffnen: Schwinge">
+              <span class="schematic-legend__dot">2</span>
+              <span data-i18n="comp.schwinge.name">Schwinge</span>
+              <span class="schematic-legend__check" aria-hidden="true">✓</span>
+            </button>
+            <button type="button" class="schematic-legend__item" role="listitem" data-key="voreilhebel" data-hotspot="3" aria-label="Bauteil 3 öffnen: Voreilhebel">
+              <span class="schematic-legend__dot">3</span>
+              <span data-i18n="comp.voreilhebel.name">Voreilhebel</span>
+              <span class="schematic-legend__check" aria-hidden="true">✓</span>
+            </button>
+            <button type="button" class="schematic-legend__item" role="listitem" data-key="kreuzkopf" data-hotspot="4" aria-label="Bauteil 4 öffnen: Kreuzkopf">
+              <span class="schematic-legend__dot">4</span>
+              <span data-i18n="comp.kreuzkopf.name">Kreuzkopf</span>
+              <span class="schematic-legend__check" aria-hidden="true">✓</span>
+            </button>
+            <button type="button" class="schematic-legend__item" role="listitem" data-key="schieber" data-hotspot="5" aria-label="Bauteil 5 öffnen: Schieber">
+              <span class="schematic-legend__dot">5</span>
+              <span data-i18n="comp.schieber.name">Schieber</span>
+              <span class="schematic-legend__check" aria-hidden="true">✓</span>
+            </button>
           </div>
         </div>
       </section>
@@ -1207,7 +1303,13 @@
             </button>
           </div>
           <h2 class="topnav__title"><span id="detail-progress">1 / 5</span></h2>
-          <div class="topnav__right"></div>
+          <div class="topnav__right">
+            <div class="lang-toggle lang-toggle--compact" role="group" aria-label="Sprache wählen">
+              <button type="button" data-lang="de" aria-pressed="true">DE</button>
+              <button type="button" data-lang="fr" aria-pressed="false">FR</button>
+              <button type="button" data-lang="en" aria-pressed="false">EN</button>
+            </div>
+          </div>
         </header>
 
         <div class="detail__hero">
@@ -1465,7 +1567,7 @@
         "start.event":       "100-Jahre-Fest · 3.–5. Juli 2026",
         "start.eventMeta":   "Realp · Festgelände der Dampfbahn Furka-Bergstrecke",
         "model.title":       "Modell",
-        "model.hint":        "Drehe das 3D-Modell mit dem Finger und tippe auf die nummerierten roten Punkte.",
+        "model.hint":        "Drehe das 3D-Modell mit dem Finger und tippe auf einen roten Punkt — oder wähle ein Bauteil aus der Liste unten.",
         "model.progress":    "{n}/5 entdeckt",
         "model.loading":     "3D-Modell wird geladen",
         "model.error":       "3D-Modell konnte nicht geladen werden.",
@@ -1475,14 +1577,14 @@
         "detail.marked":     "Als entdeckt markiert",
         "detail.toast":      "Bauteil als entdeckt markiert",
         "detail.illustration": "Schematisches Detail",
-        "info.title":        "Info",
+        "info.title":        "Über das Fest",
         "info.h1":           "Was ist die Heusinger-Steuerung?",
         "info.h2":           "100 Jahre Furka-Oberalp-Bahn",
         "info.h3":           "Über diese Anwendung",
         "info.credits":      "Gruppe 24 · GBS St. Gallen",
         "info.translationStatus": "",
         "tab.model":         "Modell",
-        "tab.info":          "Info",
+        "tab.info":          "Fest",
         "help.title":        "Wie es funktioniert",
         "help.body":         "Drehe das 3D-Modell mit dem Finger, um es aus jeder Seite zu betrachten. Tippe auf einen nummerierten roten Punkt, um mehr über das Bauteil zu erfahren. Du kannst alle fünf Bauteile in beliebiger Reihenfolge entdecken.",
         "help.cta":          "Verstanden",
@@ -1504,7 +1606,7 @@
         "start.event":       "100 ans · 3–5 juillet 2026",
         "start.eventMeta":   "Realp · site de la Furka-Bergstrecke",
         "model.title":       "Modèle",
-        "model.hint":        "Fais tourner le modèle 3D avec le doigt et tape sur les points rouges numérotés.",
+        "model.hint":        "Fais tourner le modèle 3D avec le doigt et tape sur un point rouge — ou choisis un composant dans la liste ci-dessous.",
         "model.progress":    "{n}/5 découverts",
         "model.loading":     "Chargement du modèle 3D",
         "model.error":       "Le modèle 3D n'a pas pu être chargé.",
@@ -1514,14 +1616,14 @@
         "detail.marked":     "Marqué comme découvert",
         "detail.toast":      "Composant marqué comme découvert",
         "detail.illustration": "Détail schématique",
-        "info.title":        "Info",
+        "info.title":        "À propos de la fête",
         "info.h1":           "Qu'est-ce que la distribution Heusinger ?",
         "info.h2":           "100 ans Furka-Oberalp-Bahn",
         "info.h3":           "À propos de cette application",
         "info.credits":      "Groupe 24 · GBS St-Gall",
         "info.translationStatus": "Traduction en cours — la version française des textes longs n'est pas encore disponible dans ce prototype.",
         "tab.model":         "Modèle",
-        "tab.info":          "Info",
+        "tab.info":          "Fête",
         "help.title":        "Comment ça marche",
         "help.body":         "Fais tourner le modèle 3D avec le doigt pour le voir sous tous les angles. Tape sur un point rouge numéroté pour en savoir plus sur le composant. Tu peux découvrir les cinq composants dans n'importe quel ordre.",
         "help.cta":          "Compris",
@@ -1543,7 +1645,7 @@
         "start.event":       "100-Year Festival · 3–5 July 2026",
         "start.eventMeta":   "Realp · festival grounds of the Furka steam railway",
         "model.title":       "Model",
-        "model.hint":        "Rotate the 3D model with your finger and tap the numbered red dots.",
+        "model.hint":        "Rotate the 3D model with your finger and tap a red dot — or pick a component from the list below.",
         "model.progress":    "{n}/5 discovered",
         "model.loading":     "Loading 3D model",
         "model.error":       "The 3D model could not be loaded.",
@@ -1553,14 +1655,14 @@
         "detail.marked":     "Marked as discovered",
         "detail.toast":      "Component marked as discovered",
         "detail.illustration": "Schematic detail",
-        "info.title":        "Info",
+        "info.title":        "About the festival",
         "info.h1":           "What is the Walschaerts valve gear?",
         "info.h2":           "100 years of the Furka-Oberalp Railway",
         "info.h3":           "About this application",
         "info.credits":      "Group 24 · GBS St. Gallen",
         "info.translationStatus": "Translation in progress — the English version of the long-form texts is not yet available in this prototype.",
         "tab.model":         "Model",
-        "tab.info":          "Info",
+        "tab.info":          "Festival",
         "help.title":        "How it works",
         "help.body":         "Rotate the 3D model with your finger to view it from any side. Tap a numbered red dot to learn more about that component. You can discover all five components in any order.",
         "help.cta":          "Got it",
@@ -1758,6 +1860,13 @@
         const key = h.dataset.key;
         h.classList.toggle("discovered", state.discovered.has(key));
       });
+
+      /* Auch die klickbaren Legenden-Items spiegeln den Entdeckt-Status */
+      document.querySelectorAll(".schematic-legend__item").forEach(item => {
+        const key = item.dataset.key;
+        if (!key) return;
+        item.classList.toggle("is-discovered", state.discovered.has(key));
+      });
     }
 
     function openDetail(key) {
@@ -1874,6 +1983,15 @@
             openDetail(key);
           }
         });
+      });
+
+      /* Hotspot-Legende klickbar — basiert auf Testbefund:
+         Test-Person 2 hat instinktiv die Liste angeklickt, um zum Bauteil zu gelangen.
+         Die Legende erfüllt jetzt diese Erwartung und führt zum Detail-Screen. */
+      document.querySelectorAll(".schematic-legend__item").forEach(item => {
+        const key = item.dataset.key;
+        if (!key) return;
+        item.addEventListener("click", () => openDetail(key));
       });
 
       document.querySelectorAll(".tab").forEach(tab => {
